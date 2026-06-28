@@ -189,102 +189,110 @@
         /* ── MOBILE RESPONSIVE ─────────────────────────────────────────── */
         @media (max-width: 700px) {
             body {
-                padding: 6px;
+                padding: 4px;
                 justify-content: flex-start;
                 height: auto;
                 min-height: 100vh;
             }
             .app-container {
                 flex-direction: column;
-                gap: 8px;
+                gap: 4px;
                 max-width: 100%;
             }
             .left-panel, .right-panel {
-                padding: 10px 12px;
+                padding: 6px 10px;
                 border-radius: 8px;
             }
-            /* Section titles smaller */
             .section-title {
-                font-size: 12px;
-                margin-bottom: 2px;
+                font-size: 11px;
+                margin-bottom: 1px;
             }
-            /* Default buttons — touch-friendly but compact */
+            h2 { margin: 0 0 4px 0; font-size: 16px; }
+            hr { margin: 3px 0 !important; }
+
+            /* Default buttons */
             button {
                 font-size: 14px;
-                padding: 8px 12px;
-                min-height: 38px;
+                padding: 7px 11px;
+                min-height: 36px;
                 margin: 2px;
             }
-            /* Handedness row stays normal size */
-            .flex-row { gap: 8px; }
+            .flex-row { gap: 6px; }
 
             /* Pitcher die — compact */
+            .row { margin: 3px 0; }
             .row button {
-                font-size: 13px;
-                padding: 6px 10px;
-                min-height: 32px;
+                font-size: 12px;
+                padding: 5px 9px;
+                min-height: 30px;
             }
 
             /* Trait buttons — small and tight */
             .trait-btn {
                 font-size: 11px;
-                padding: 5px 7px;
-                min-height: 30px;
+                padding: 4px 6px;
+                min-height: 28px;
                 margin: 1px;
             }
-            .trait-row { gap: 4px; margin: 2px 0; }
+            .trait-row { gap: 3px; margin: 1px 0; }
             .trait-group { gap: 1px; font-size: 10px; }
             .trait-group span { margin-right: 1px; }
 
             /* Play button */
             #play-btn {
-                font-size: 16px;
-                padding: 10px 0;
-                margin-top: 4px;
+                font-size: 15px;
+                padding: 8px 0;
+                margin-top: 3px;
             }
 
-            /* Diamond — scale up slightly for touch */
+            /* Diamond — shrink slightly to save vertical space */
             .diamond-container {
-                width: 150px;
-                height: 150px;
-                margin: 4px auto;
+                width: 130px;
+                height: 130px;
+                margin: 2px auto;
             }
-            .base { width: 42px; height: 42px; }
-            .base-inner { font-size: 10px; max-width: 36px; }
-            #base-2nd { top: 0px;  left: 54px; }
-            #base-3rd { top: 54px; left: 0px;  }
-            #base-1st { top: 54px; left: 108px; }
+            .base { width: 38px; height: 38px; }
+            .base-inner { font-size: 9px; max-width: 32px; }
+            #base-2nd { top: 0px;  left: 46px; }
+            #base-3rd { top: 46px; left: 0px;  }
+            #base-1st { top: 46px; left: 92px; }
 
             /* Outs buttons */
             #out-cnt-1, #out-cnt-2, #out-cnt-3 {
-                font-size: 16px;
-                padding: 8px 18px;
+                font-size: 15px;
+                padding: 6px 16px;
             }
+
             /* Score and end inning */
-            .score-display { font-size: 13px; margin-top: 3px; }
-            #clear-bases-btn { font-size: 13px; padding: 9px; }
+            .score-display { font-size: 12px; margin-top: 2px; }
+            #clear-bases-btn { font-size: 12px; padding: 7px; margin-top: 3px; }
 
-            /* Action buttons — HIT/OUT/WALK */
+            /* Action buttons */
             .action-btn {
-                font-size: 16px;
-                width: 85px;
-                padding: 11px 0;
+                font-size: 15px;
+                width: 80px;
+                padding: 9px 0;
             }
-            /* Result + dice */
-            #result-msg { font-size: 15px; }
-            #hit-details { font-size: 12px; }
-            .dice-container { height: 80px; gap: 10px; margin: 6px 0; }
-            .die-wrapper { width: 75px; height: 75px; }
-            .die-text { font-size: 26px; }
-            #total-display { font-size: 26px; margin: 3px 0; }
+            /* Resolve outcome section */
+            .flex-row .action-btn { margin: 2px; }
 
-            /* Right panel panels width */
-            .steal-box, .bunt-box { width: 96%; margin-top: 8px; }
-            .steal-act-btn, .bunt-act-btn { font-size: 14px; padding: 10px; }
-            .steal-mini-btn { font-size: 12px; padding: 6px 8px; min-height: 32px; }
+            /* Result + dice */
+            #result-msg { font-size: 14px; margin-top: 2px; min-height: 20px; }
+            #hit-details { font-size: 11px; margin-top: 2px; }
+            .dice-container { height: 72px; gap: 8px; margin: 4px 0; }
+            .die-wrapper { width: 68px; height: 68px; }
+            .die-text { font-size: 23px; }
+            #total-display { font-size: 24px; margin: 2px 0; }
+            #hit-die-container { margin-top: 6px; min-height: 80px; }
+            .match-alert { font-size: 12px; margin: 2px 0; min-height: 14px; }
+
+            /* Right panel steal/bunt */
+            .steal-box, .bunt-box { width: 96%; margin-top: 6px; padding: 7px; }
+            .steal-act-btn, .bunt-act-btn { font-size: 13px; padding: 8px; }
+            .steal-mini-btn { font-size: 11px; padding: 5px 7px; min-height: 28px; }
 
             /* Next batter */
-            #next-btn { font-size: 16px; padding: 11px 0; }
+            #next-btn { font-size: 15px; padding: 9px 0; margin-top: 6px; }
         }
     </style>
 </head>
