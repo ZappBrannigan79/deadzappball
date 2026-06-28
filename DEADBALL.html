@@ -866,7 +866,7 @@
                 // Rolls 3–6: Single DEF (1B / 2B / 3B / SS)
                 const pos = {3:"1B", 4:"2B", 5:"3B", 6:"SS"}[adjRoll] || {3:"1B",4:"2B",5:"3B",6:"SS"}[Math.min(adjRoll,6)];
                 const dir = {"1B":"toward first","2B":"up the middle","3B":"down the line","SS":"in the hole"};
-                msgBox.innerText = `Sharp grounder ${dir[pos]} — 1B (DEF: ${pos})`;
+                msgBox.innerText = `SINGLE — sharp grounder ${dir[pos]}, ${pos} must field it (DEF roll)`;
                 triggerDefenseRoll("SINGLE", pos); return;
 
             } else if (adjRoll >= 7 && adjRoll <= 9) {
@@ -881,17 +881,17 @@
 
             } else if (adjRoll === 15) {
                 // Roll 15: Double, DEF (LF)
-                msgBox.innerText = "Scorched down the left-field line — 2B (DEF: LF)";
+                msgBox.innerText = "DOUBLE — scorched down the left-field line (DEF roll: LF)";
                 triggerDefenseRoll("DOUBLE", "LF"); return;
 
             } else if (adjRoll === 16) {
                 // Roll 16: Double, DEF (CF)
-                msgBox.innerText = "Ripped into the gap — 2B (DEF: CF)";
+                msgBox.innerText = "DOUBLE — ripped into the gap (DEF roll: CF)";
                 triggerDefenseRoll("DOUBLE", "CF"); return;
 
             } else if (adjRoll === 17) {
                 // Roll 17: Double, DEF (RF)
-                msgBox.innerText = "Lasered to right-center — 2B (DEF: RF)";
+                msgBox.innerText = "DOUBLE — lasered to right-center (DEF roll: RF)";
                 triggerDefenseRoll("DOUBLE", "RF"); return;
 
             } else if (adjRoll === 18) {
@@ -912,18 +912,35 @@
             document.getElementById('die-def').innerText = defRoll;
             document.getElementById('container-def').style.display = 'block';
             let msgBox = document.getElementById('result-msg');
+            let detailsBox = document.getElementById('hit-details');
             if (defRoll === 12) {
-                const grabs = ["Incredible diving stop — robbed! OUT","Reaches back and hauls it in — spectacular OUT","Full extension, he takes one away — OUT"];
+                const grabs = ["Incredible diving stop — OUT (robbed!)","Reaches back and hauls it in — OUT (spectacular)","Full extension, takes one away — OUT"];
                 msgBox.innerText = grabs[Math.floor(Math.random()*grabs.length)];
                 msgBox.className = "msg-out"; addOuts(1);
             } else {
                 let held = (defRoll >= 3 && defRoll <= 9);
                 if (hitType === "DOUBLE") {
-                    msgBox.innerText = held ? `Held to a double — 2B (${pos} plays it cleanly)` : `Ball gets past him — 2B, runners moving (${pos})`;
-                    advanceBasesOnHit("DOUBLE", held ? 2 : 3);
+                    const doubleContact = { "LF": "down the left-field line", "CF": "into the gap", "RF": "to right-center" };
+                    if (held) {
+                        msgBox.innerText = `DOUBLE — ${doubleContact[pos] || 'to the outfield'}, ${pos} cuts it off`;
+                        detailsBox.innerText = 'Batter held to 2nd; runners advance 2.';
+                        advanceBasesOnHit("DOUBLE", 2);
+                    } else {
+                        msgBox.innerText = `DOUBLE — ${doubleContact[pos] || 'to the outfield'}, gets past ${pos}`;
+                        detailsBox.innerText = 'Ball rolls to the wall; runners advance 3.';
+                        advanceBasesOnHit("DOUBLE", 3);
+                    }
                 } else {
-                    msgBox.innerText = held ? `Gets to it in time — 1B (${pos} holds the runner)` : `Fumbles the pick — 1B, runners advance (${pos})`;
-                    advanceBasesOnHit("SINGLE", 1);
+                    const singleContact = { "1B": "toward first", "2B": "up the middle", "3B": "down the line", "SS": "in the hole" };
+                    if (held) {
+                        msgBox.innerText = `SINGLE — grounder ${singleContact[pos] || 'to the infield'}, ${pos} fields it cleanly`;
+                        detailsBox.innerText = 'Runners hold on the play.';
+                        advanceBasesOnHit("SINGLE", 1);
+                    } else {
+                        msgBox.innerText = `SINGLE — grounder ${singleContact[pos] || 'to the infield'}, ${pos} bobbles it`;
+                        detailsBox.innerText = 'Error on the play; runners take an extra base.';
+                        advanceBasesOnHit("SINGLE", 2);
+                    }
                 }
             }
             postResolutionLoop();
@@ -985,10 +1002,13 @@
                     if (isLineout && !noRunners) runnerDetail = 'Runners hold — no advancement on a liner.';
                     addOuts(1);
                 } else {
-                    // Add batter out FIRST so trackScore sees correct outCount
                     addOuts(1);
                     let detail = applyInfieldGrounder();
-                    runnerDetail = detail;
+                    // Suppress runner detail on third out; suppress DP on 2 outs
+                    if (outCount < 3) {
+                        if (outCount === 2 && detail.startsWith('DOUBLE PLAY')) runnerDetail = '';
+                        else runnerDetail = detail;
+                    }
                     renderBases();
                 }
 
@@ -1001,9 +1021,8 @@
             if (ones >= 7 && ones <= 9) {
                 let flavor = pick(flyFlavor[ones]);
                 msgBox.innerText = flavor;
-                // Add batter out FIRST so trackScore sees correct outCount
                 addOuts(1);
-                if (!noRunners) {
+                if (!noRunners && outCount < 3) {
                     runnerDetail = applyOutfieldFly();
                     renderBases();
                 }
