@@ -824,15 +824,15 @@
 
             // Flavor pools
             const singleShort = [
-                "Bleeder through the left side — 1B",
-                "Swinging bunt, beats it out — 1B",
-                "Flare to shallow center — 1B",
-                "Squib up the middle — 1B",
+                "SINGLE — bleeder through the left side",
+                "SINGLE — swinging bunt, beats it out",
+                "SINGLE — flare to shallow center",
+                "SINGLE — squib up the middle",
             ];
             const singleAdv2 = [
-                "Gap shot, runner rolling — 1B (adv 2)",
-                "Line drive to left, ball gets away — 1B (adv 2)",
-                "Bloop to right, they're not stopping — 1B (adv 2)",
+                "SINGLE — gap shot, runners moving",
+                "SINGLE — line drive to left, ball gets away",
+                "SINGLE — bloop to right, they're not stopping",
             ];
             const tripleFlavor = [
                 "Into the corner, he's rounding third — 3B!",
@@ -896,7 +896,7 @@
 
             } else if (adjRoll === 18) {
                 // Roll 18: Double, runners advance 3
-                msgBox.innerText = "Off the wall and rolling — 2B (adv 3)";
+                msgBox.innerText = "DOUBLE — off the wall and rolling, runners advancing";
                 advanceBasesOnHit("DOUBLE", 3);
 
             } else {
