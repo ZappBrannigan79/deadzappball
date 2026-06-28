@@ -947,7 +947,7 @@
                 "Fanned on a filthy changeup — K",
             ];
             const groundFlavor = {
-                3: ["Chopper to the right side — 3U","Slow roller, first baseman charges — 3-1","Tapper right at first — 3U"],
+                3: ["Chopper to the right side — G3","Slow roller, first baseman charges — G3","Tapper right at first — G3"],
                 4: ["Routine grounder to second — 4-3","Up the middle, second baseman ranges — 4-3","Bouncer to second — 4-3"],
                 5: ["Nubber down the line, third baseman pounces — 5-3","Hot shot at the hot corner — 5-3","Hard shot to third — 5-3"],
                 6: ["In the hole, shortstop dives and fires — 6-3","Backhander deep in the hole — 6-3","Scooped and fired from short — 6-3"],
@@ -979,17 +979,17 @@
             // ── INFIELD OUT (ones 3–6) ────────────────────────────────────
             if (ones >= 3 && ones <= 6) {
                 let flavor = isLineout ? pick(lineFlavor[ones]) : pick(groundFlavor[ones]);
+                msgBox.innerText = flavor;
 
                 if (isLineout || noRunners) {
-                    // Lineouts and bases empty: batter out, runners hold (no advancement)
-                    msgBox.innerText = flavor;
                     if (isLineout && !noRunners) runnerDetail = 'Runners hold — no advancement on a liner.';
                     addOuts(1);
                 } else {
-                    // GROUNDER with runners — apply Base Running Table (Infield Outs)
-                    let detail = applyInfieldGrounder(flavor);
-                    msgBox.innerText = flavor;
+                    // Add batter out FIRST so trackScore sees correct outCount
+                    addOuts(1);
+                    let detail = applyInfieldGrounder();
                     runnerDetail = detail;
+                    renderBases();
                 }
 
                 detailsBox.innerText = runnerDetail;
@@ -1001,11 +1001,13 @@
             if (ones >= 7 && ones <= 9) {
                 let flavor = pick(flyFlavor[ones]);
                 msgBox.innerText = flavor;
+                // Add batter out FIRST so trackScore sees correct outCount
+                addOuts(1);
                 if (!noRunners) {
                     runnerDetail = applyOutfieldFly();
+                    renderBases();
                 }
                 detailsBox.innerText = runnerDetail;
-                addOuts(1);
                 postResolutionLoop();
                 return;
             }
@@ -1017,7 +1019,8 @@
         }
 
         // ── INFIELD GROUNDER BASE RUNNING TABLE ───────────────────────────
-        function applyInfieldGrounder(flavorText) {
+        // NOTE: batter out already added by handleOut. Only addOuts for extra outs (DP, TP).
+        function applyInfieldGrounder() {
             let r1 = bases[1], r2 = bases[2], r3 = bases[3];
             let b1 = !!r1, b2 = !!r2, b3 = !!r3;
             let detail = '';
@@ -1035,7 +1038,7 @@
                     detail = 'FC — Runner on 3rd out at home; batter to 1st, runners advance.';
                     bases = { 1: batter, 2: r1, 3: r2 }; addOuts(1);
                 }
-                addOuts(1); return detail;
+                return detail;
             }
 
             if (!b1 && b2 && b3) {
@@ -1045,7 +1048,7 @@
                     detail = 'Batter out at 1st; 2nd→3rd, 3rd scores.';
                     bases = { 1: null, 2: null, 3: r2 }; trackScore(1);
                 }
-                addOuts(1); return detail;
+                return detail;
             }
 
             if (b1 && !b2 && b3) {
@@ -1069,7 +1072,7 @@
                     detail = 'DOUBLE PLAY — Batter and runner on 1st out; runner on 3rd holds.';
                     bases = { 1: null, 2: null, 3: r3 }; addOuts(1);
                 }
-                addOuts(1); return detail;
+                return detail;
             }
 
             if (b1 && b2 && !b3) {
@@ -1088,19 +1091,19 @@
                         bases = { 1: null, 2: null, 3: r2 }; addOuts(1);
                     }
                 }
-                addOuts(1); return detail;
+                return detail;
             }
 
             if (!b1 && !b2 && b3) {
                 if (is3BorSS) {
                     detail = 'Batter out; 3rd holds (5/6 on table).';
                 } else if (mss <= 49) {
-                    detail = 'Batter out; 3rd scores — 3A56.';
+                    detail = 'Batter out; 3rd scores.';
                     bases[3] = null; trackScore(1);
                 } else {
                     detail = 'Batter out; 3rd holds.';
                 }
-                addOuts(1); return detail;
+                return detail;
             }
 
             if (!b1 && b2 && !b3) {
@@ -1110,7 +1113,7 @@
                 } else {
                     detail = 'Batter out; 2nd holds.';
                 }
-                addOuts(1); return detail;
+                return detail;
             }
 
             if (b1 && !b2 && !b3) {
@@ -1124,10 +1127,10 @@
                     detail = 'DOUBLE PLAY — Batter and runner on 1st both out.';
                     bases[1] = null; addOuts(1);
                 }
-                addOuts(1); return detail;
+                return detail;
             }
 
-            addOuts(1); return '';
+            return '';
         }
 
         // ── OUTFIELD FLY BASE RUNNING TABLE ──────────────────────────────
