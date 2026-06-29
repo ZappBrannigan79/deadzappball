@@ -109,6 +109,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            position: relative;
         }
         .right-panel { 
             flex: 1.2; 
@@ -310,12 +311,61 @@
 
             #next-btn { font-size: 15px; padding: 9px 0; margin-top: 6px; }
         }
+
+        /* ── RESULT STAMP OVERLAY ─────────────────────────────────────── */
+        #result-stamp {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            z-index: 50;
+            align-items: center;
+            justify-content: center;
+        }
+        #result-stamp.show {
+            display: flex;
+        }
+        .stamp-text {
+            font-family: 'Arial Black', 'Impact', sans-serif;
+            font-size: 52px;
+            font-weight: 900;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            padding: 8px 18px;
+            border: 6px solid;
+            border-radius: 6px;
+            transform: rotate(-12deg);
+            opacity: 0;
+            animation: stamp-in 0.25s cubic-bezier(0.2, 0.8, 0.3, 1.2) forwards;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.15);
+            white-space: nowrap;
+            max-width: 90%;
+            text-align: center;
+            transition: opacity 0.5s ease;
+        }
+        .stamp-text.fading {
+            opacity: 0 !important;
+            animation: none;
+        }
+        .stamp-hit  { color: #137333; border-color: #137333; background: rgba(230,244,234,0.85); }
+        .stamp-out  { color: #c5221f; border-color: #c5221f; background: rgba(252,232,230,0.85); }
+        .stamp-walk { color: #b06000; border-color: #b06000; background: rgba(254,239,195,0.85); }
+        @keyframes stamp-in {
+            0%   { opacity: 0; transform: rotate(-12deg) scale(1.6); }
+            60%  { opacity: 1; transform: rotate(-12deg) scale(0.95); }
+            80%  { transform: rotate(-12deg) scale(1.03); }
+            100% { opacity: 1; transform: rotate(-12deg) scale(1); }
+        }
+        @media (max-width: 700px) {
+            .stamp-text { font-size: 36px; border-width: 4px; letter-spacing: 2px; }
+        }
     </style>
 </head>
 <body>
 
     <div class="app-container">
         <div class="left-panel">
+            <div id="result-stamp"><span id="stamp-text" class="stamp-text"></span></div>
             <div>
                 <div class="flex-row">
                     <div>
@@ -807,6 +857,7 @@
 
         function setBatterHand(hand) {
             bHand = hand;
+            clearStamp();
             ['L','R','S'].forEach(h => { document.getElementById('bHand'+h).classList.remove('active-b', 'illuminate'); });
             document.getElementById('bHand' + hand).classList.add('active-b');
             let playBtn = document.getElementById('play-btn'); playBtn.classList.remove('faded'); playBtn.disabled = false;
@@ -842,7 +893,7 @@
 
         function playAtBat() {
             if (!bHand) return;
-            clearDisplay();
+            clearDisplay(); clearStamp();
             tens = Math.floor(Math.random() * 10) * 10; ones = Math.floor(Math.random() * 10);
             pitch = Math.floor(Math.random() * getEffectiveDie()) + 1;
             mss = tens + ones + pitch;
@@ -898,11 +949,11 @@
             ];
 
             if (adjRoll <= 0) {
-                msgBox.innerText = pick(singleShort);
+                msgBox.innerText = pick(singleShort); showStamp("SINGLE","hit");
                 advanceBasesOnHit("SINGLE", 1);
 
             } else if (adjRoll === 1) {
-                msgBox.innerText = pick(singleShort);
+                msgBox.innerText = pick(singleShort); showStamp("SINGLE","hit");
                 advanceBasesOnHit("SINGLE", 1);
 
             } else if (adjRoll === 2) {
@@ -916,11 +967,11 @@
                 triggerDefenseRoll("SINGLE", pos); return;
 
             } else if (adjRoll >= 7 && adjRoll <= 9) {
-                msgBox.innerText = pick(singleShort);
+                msgBox.innerText = pick(singleShort); showStamp("SINGLE","hit");
                 advanceBasesOnHit("SINGLE", 1);
 
             } else if (adjRoll >= 10 && adjRoll <= 14) {
-                msgBox.innerText = pick(singleAdv2);
+                msgBox.innerText = pick(singleAdv2); showStamp("SINGLE","hit");
                 detailsBox.innerText = 'Runners advance two bases.';
                 advanceBasesOnHit("SINGLE", 2);
 
@@ -937,12 +988,12 @@
                 triggerDefenseRoll("DOUBLE", "RF"); return;
 
             } else if (adjRoll === 18) {
-                msgBox.innerText = "DOUBLE — off the wall and rolling, runners advancing";
+                msgBox.innerText = "DOUBLE — off the wall and rolling, runners advancing"; showStamp("DOUBLE","hit");
                 detailsBox.innerText = 'Runners advance three bases.';
                 advanceBasesOnHit("DOUBLE", 3);
 
             } else {
-                msgBox.innerText = "He got all of it — GONE! HR 🏠";
+                msgBox.innerText = "He got all of it — GONE! HR 🏠"; showStamp("HOME RUN","hit");
                 advanceBasesOnHit("HR", 4);
             }
             postResolutionLoop();
@@ -956,29 +1007,29 @@
             let detailsBox = document.getElementById('hit-details');
             if (defRoll === 12) {
                 const grabs = ["Incredible diving stop — OUT (robbed!)","Reaches back and hauls it in — OUT (spectacular)","Full extension, takes one away — OUT"];
-                msgBox.innerText = grabs[Math.floor(Math.random()*grabs.length)];
+                msgBox.innerText = grabs[Math.floor(Math.random()*grabs.length)]; showStamp("OUT","out");
                 msgBox.className = "msg-out"; addOuts(1);
             } else {
                 let held = (defRoll >= 3 && defRoll <= 9);
                 if (hitType === "DOUBLE") {
                     const doubleContact = { "LF": "down the left-field line", "CF": "into the gap", "RF": "to right-center" };
                     if (held) {
-                        msgBox.innerText = `DOUBLE — ${doubleContact[pos] || 'to the outfield'}, ${pos} cuts it off`;
+                        msgBox.innerText = `DOUBLE — ${doubleContact[pos] || 'to the outfield'}, ${pos} cuts it off`; showStamp("DOUBLE","hit");
                         detailsBox.innerText = 'Batter held to 2nd; runners advance 2.';
                         advanceBasesOnHit("DOUBLE", 2);
                     } else {
-                        msgBox.innerText = `DOUBLE — ${doubleContact[pos] || 'to the outfield'}, gets past ${pos}`;
+                        msgBox.innerText = `DOUBLE — ${doubleContact[pos] || 'to the outfield'}, gets past ${pos}`; showStamp("DOUBLE","hit");
                         detailsBox.innerText = 'Ball rolls to the wall; runners advance 3.';
                         advanceBasesOnHit("DOUBLE", 3);
                     }
                 } else {
                     const singleContact = { "1B": "toward first", "2B": "up the middle", "3B": "down the line", "SS": "in the hole" };
                     if (held) {
-                        msgBox.innerText = `SINGLE — grounder ${singleContact[pos] || 'to the infield'}, ${pos} fields it cleanly`;
+                        msgBox.innerText = `SINGLE — grounder ${singleContact[pos] || 'to the infield'}, ${pos} fields it cleanly`; showStamp("SINGLE","hit");
                         detailsBox.innerText = 'Runners hold on the play.';
                         advanceBasesOnHit("SINGLE", 1);
                     } else {
-                        msgBox.innerText = `SINGLE — grounder ${singleContact[pos] || 'to the infield'}, ${pos} bobbles it`;
+                        msgBox.innerText = `SINGLE — grounder ${singleContact[pos] || 'to the infield'}, ${pos} bobbles it`; showStamp("SINGLE","hit");
                         detailsBox.innerText = 'Error on the play; runners take an extra base.';
                         advanceBasesOnHit("SINGLE", 2);
                     }
@@ -1026,7 +1077,7 @@
             let runnerDetail = '';
 
             if (ones >= 0 && ones <= 2) {
-                msgBox.innerText = pick(strikeoutFlavor);
+                msgBox.innerText = pick(strikeoutFlavor); showStamp("STRIKEOUT","out");
                 addOuts(1);
                 postResolutionLoop();
                 return;
@@ -1064,6 +1115,7 @@
                 }
 
                 detailsBox.innerText = runnerDetail;
+                if (msgBox.innerText.includes('TRIPLE PLAY')) { showStamp('TRIPLE PLAY','out'); } else if (msgBox.innerText.includes('DOUBLE PLAY') || (runnerDetail && runnerDetail.startsWith('DOUBLE PLAY'))) { showStamp('DOUBLE PLAY','out'); } else { showStamp('OUT','out'); }
                 postResolutionLoop();
                 return;
             }
@@ -1076,7 +1128,7 @@
                     runnerDetail = applyOutfieldFly();
                     renderBases();
                 }
-                detailsBox.innerText = runnerDetail;
+                detailsBox.innerText = runnerDetail; showStamp("OUT","out");
                 postResolutionLoop();
                 return;
             }
@@ -1236,7 +1288,7 @@
                 "Nibbled himself into a walk — BB",
             ];
             let msg = walkFlavor[Math.floor(Math.random()*walkFlavor.length)];
-            document.getElementById('result-msg').innerText = msg;
+            document.getElementById('result-msg').innerText = msg; showStamp("WALK","walk");
             advanceBasesOnWalk(); postResolutionLoop();
         }
         function nextBatter() { clearDisplay(); postResolutionLoop(); }
@@ -1384,6 +1436,33 @@
                 if (r1) parts.push('1st→2nd');
             }
             return parts.length ? parts.join('; ') + ' on the play.' : '';
+        }
+
+
+        // ── RESULT STAMP ───────────────────────────────────────────────
+        let stampTimer = null;
+        function showStamp(label, type) {
+            clearTimeout(stampTimer);
+            let overlay = document.getElementById('result-stamp');
+            let txt = document.getElementById('stamp-text');
+            txt.classList.remove('fading');
+            txt.className = 'stamp-text stamp-' + type;
+            txt.innerText = label;
+            // Re-trigger animation by removing/re-adding class
+            overlay.classList.remove('show');
+            void overlay.offsetWidth;
+            overlay.classList.add('show');
+            // Auto-fade after 5 seconds
+            stampTimer = setTimeout(() => {
+                txt.classList.add('fading');
+                setTimeout(() => overlay.classList.remove('show'), 500);
+            }, 5000);
+        }
+        function clearStamp() {
+            clearTimeout(stampTimer);
+            let txt = document.getElementById('stamp-text');
+            if (txt) txt.classList.remove('fading');
+            document.getElementById('result-stamp').classList.remove('show');
         }
 
         // Initialize trait buttons on load
