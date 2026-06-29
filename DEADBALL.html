@@ -423,6 +423,7 @@
             <div id="hit-die-container">
                 <div id="container-hit" style="display: none; text-align: center;">
                     <div id="hit-die-label" style="font-size: 11px; font-weight: bold; margin-bottom: 2px; color: #137333;">HIT DIE</div>
+                    <div id="hit-power-adj" style="font-size: 11px; color: #7c3aed; font-weight: bold; min-height: 14px; margin-bottom: 2px;"></div>
                     <div class="die-wrapper">
                         <svg class="die-svg" viewBox="0 0 100 100"><polygon id="hit-die-polygon" class="fill-green outer-edge" points="50,2 95,25 95,75 50,98 5,75 5,25" /><polygon points="50,23 80,43 50,80 20,43" /><line x1="50" y1="2" x2="50" y2="23"/><line x1="95" y1="25" x2="80" y2="43"/><line x1="95" y1="75" x2="80" y2="43"/><line x1="50" y1="98" x2="50" y2="80"/><line x1="5" y1="75" x2="20" y2="43"/><line x1="5" y1="25" x2="20" y2="43"/><line x1="80" y1="43" x2="50" y2="80"/><line x1="20" y1="43" x2="50" y2="80"/></svg>
                         <div id="die-hit" class="die-text">--</div>
@@ -864,7 +865,6 @@
         function handleHit() {
             resetHitDieVisual();
             let hitRoll = Math.floor(Math.random() * 20) + 1;
-            document.getElementById('die-hit').innerText = hitRoll;
             document.getElementById('container-hit').style.display = 'block';
             let msgBox = document.getElementById('result-msg');
             let detailsBox = document.getElementById('hit-details');
@@ -872,6 +872,18 @@
 
             let powerShift = (batterTraits.power === 'P+') ? 1 : (batterTraits.power === 'P++') ? 2 : (batterTraits.power === 'P-') ? -1 : 0;
             let adjRoll = hitRoll + powerShift;
+            document.getElementById('die-hit').innerText = adjRoll;
+
+            // Show power modifier annotation near the hit die
+            let adjEl = document.getElementById('hit-power-adj');
+            if (adjEl) {
+                if (powerShift !== 0) {
+                    let sign = powerShift > 0 ? '+' : '';
+                    adjEl.innerText = `${hitRoll} ${sign}${powerShift} = ${adjRoll} (${batterTraits.power})`;
+                } else {
+                    adjEl.innerText = '';
+                }
+            }
 
             const singleShort = [
                 "SINGLE — bleeder through the left side",
