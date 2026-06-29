@@ -9,83 +9,315 @@
     <meta name="theme-color" content="#137333">
     <link rel="manifest" href="deadball.webmanifest">
     <style>
-        body { font-family: sans-serif; background: #f4f4f6; color: #333; margin: 0; padding: 15px; height: 100vh; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; }
+        body { 
+            font-family: sans-serif; 
+            background: #f4f4f6; 
+            color: #333; 
+            margin: 0; 
+            padding: 15px;
+            height: 100vh;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
         h2 { margin: 0 0 10px 0; font-size: 20px; }
         .row { margin: 8px 0; }
         .section-title { font-size: 14px; font-weight: bold; margin-bottom: 4px; color: #555; }
-        button { font-size: 16px; padding: 8px 16px; margin: 3px; cursor: pointer; border-radius: 5px; border: 1px solid #ccc; font-weight: bold; background: #fff; transition: opacity 0.2s, border-color 0.2s; }
+        
+        button { 
+            font-size: 16px; 
+            padding: 8px 16px; 
+            margin: 3px; 
+            cursor: pointer; 
+            border-radius: 5px; 
+            border: 1px solid #ccc; 
+            font-weight: bold; 
+            background: #fff; 
+            transition: opacity 0.2s, border-color 0.2s;
+        }
         .active-p { background: #0055ff; color: white; border-color: #0033aa; }
         .active-b { background: #137333; color: white; border-color: #0b4b21; }
         .active-hand { background: #222; color: white; border-color: #000; }
         .active-out { background: #c5221f; color: white; border-color: #a61c19; }
         .active-hp { background: #7c3aed; color: white; border-color: #5b21b6; }
-        .illuminate { border-color: #ff3333 !important; border-width: 2px; animation: aggressive-pulse 0.8s infinite alternate; }
-        @keyframes aggressive-pulse { from { background-color: #fff; color: #333; box-shadow: 0 0 4px rgba(255, 51, 51, 0.2); } to { background-color: #ff3333; color: #fff; border-color: #b30000 !important; box-shadow: 0 0 16px rgba(255, 51, 51, 0.8); } }
-        .illuminate-trait { border-color: #7c3aed !important; border-width: 2px; animation: trait-pulse 0.9s infinite alternate; }
-        @keyframes trait-pulse { from { background-color: #fff; color: #333; box-shadow: 0 0 3px rgba(124,58,237,0.2); } to { background-color: #ede9fe; color: #5b21b6; border-color: #5b21b6 !important; box-shadow: 0 0 10px rgba(124,58,237,0.6); } }
-        .illuminate-reset { border-color: #c5221f; background: #c5221f !important; color: white !important; box-shadow: 0 0 12px rgba(197, 34, 31, 0.6); animation: pulse-reset 1.2s infinite alternate; }
-        @keyframes pulse-reset { from { box-shadow: 0 0 4px rgba(197, 34, 31, 0.4); } to { box-shadow: 0 0 16px rgba(197, 34, 31, 0.8); } }
-        .faded { opacity: 0.35; cursor: not-allowed !important; }
+        
+        .illuminate {
+            border-color: #ff3333 !important;
+            border-width: 2px;
+            animation: aggressive-pulse 0.8s infinite alternate;
+        }
+        @keyframes aggressive-pulse {
+            from { 
+                background-color: #fff; 
+                color: #333;
+                box-shadow: 0 0 4px rgba(255, 51, 51, 0.2);
+            }
+            to { 
+                background-color: #ff3333; 
+                color: #fff;
+                border-color: #b30000 !important;
+                box-shadow: 0 0 16px rgba(255, 51, 51, 0.8);
+            }
+        }
+
+        .illuminate-trait {
+            border-color: #7c3aed !important;
+            border-width: 2px;
+            animation: trait-pulse 0.9s infinite alternate;
+        }
+        @keyframes trait-pulse {
+            from { background-color: #fff; color: #333; box-shadow: 0 0 3px rgba(124,58,237,0.2); }
+            to   { background-color: #ede9fe; color: #5b21b6; border-color: #5b21b6 !important; box-shadow: 0 0 10px rgba(124,58,237,0.6); }
+        }
+
+        .illuminate-reset {
+            border-color: #c5221f;
+            background: #c5221f !important;
+            color: white !important;
+            box-shadow: 0 0 12px rgba(197, 34, 31, 0.6);
+            animation: pulse-reset 1.2s infinite alternate;
+        }
+        @keyframes pulse-reset {
+            from { box-shadow: 0 0 4px rgba(197, 34, 31, 0.4); }
+            to { box-shadow: 0 0 16px rgba(197, 34, 31, 0.8); }
+        }
+
+        .faded {
+            opacity: 0.35;
+            cursor: not-allowed !important;
+        }
+        
         #play-btn { font-size: 20px; padding: 12px 0; background: #222; color: white; font-weight: bold; width: 100%; border-radius: 8px; margin-top: 5px; }
         #next-btn { font-size: 18px; padding: 10px 0; background: #6f42c1; color: white; font-weight: bold; border-radius: 8px; border-color: #5a32a3; width: 100%; margin-top: 10px; }
         #clear-bases-btn { font-size: 13px; padding: 8px 12px; background: #f4f4f6; color: #333; font-weight: bold; border-radius: 5px; border-color: #ccc; margin-top: 5px; width: 100%; }
-        .app-container { display: flex; max-width: 1050px; margin: 0 auto; gap: 20px; align-items: stretch; width: 100%; }
-        .left-panel { flex: 1; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; }
-        .right-panel { flex: 1.2; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; }
+        
+        .app-container { 
+            display: flex; 
+            max-width: 1050px; 
+            margin: 0 auto; 
+            gap: 20px; 
+            align-items: stretch;
+            width: 100%;
+        }
+        .left-panel { 
+            flex: 1; 
+            background: white; 
+            padding: 15px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .right-panel { 
+            flex: 1.2; 
+            background: white; 
+            padding: 15px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
         .flex-row { display: flex; justify-content: center; gap: 20px; }
         .match-alert { font-size: 13px; font-weight: bold; color: #333; margin: 5px 0; min-height: 18px; text-align: center; }
+
         .dice-container { display: flex; justify-content: center; gap: 15px; margin: 10px 0; height: 85px; }
         .die-wrapper { position: relative; width: 80px; height: 80px; }
         .die-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; filter: drop-shadow(2px 3px 4px rgba(0,0,0,0.3)); }
+        
         .die-svg path, .die-svg line, .die-svg polygon { stroke: rgba(255, 255, 255, 0.45); stroke-width: 1.75; }
         .die-svg .outer-edge { stroke: rgba(255, 255, 255, 0.85); stroke-width: 2.5; }
-        .fill-blue { fill: #0055ff !important; } .fill-red { fill: #ff3333 !important; } .fill-green { fill: #137333 !important; } .fill-gray { fill: #70757a !important; } .fill-orange { fill: #e67e22 !important; }
+        
+        .fill-blue { fill: #0055ff !important; }
+        .fill-red { fill: #ff3333 !important; }
+        .fill-green { fill: #137333 !important; }
+        .fill-gray { fill: #70757a !important; }
+        .fill-orange { fill: #e67e22 !important; }
+
         .die-text { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 900; color: white; z-index: 10; text-shadow: 2px 2px 2px rgba(0,0,0,0.9); }
+        
         #total-display { font-size: 32px; font-weight: bold; margin: 5px 0; color: #111; text-align: center; }
         .action-btn { font-size: 16px; width: 95px; padding: 10px 0; font-weight: bold; border: 2px solid transparent; }
         #hit-btn { background: #e6f4ea; color: #137333; border-color: #137333; }
         #out-btn { background: #fce8e6; color: #c5221f; border-color: #c5221f; }
         #walk-btn { background: #feefc3; color: #b06000; border-color: #b06000; }
+        
         #result-msg { font-size: 18px; font-weight: bold; margin-top: 5px; min-height: 28px; text-align: center; }
         #hit-details { font-size: 14px; color: #444; margin-top: 5px; font-style: italic; font-weight: bold; white-space: pre-line; text-align: center; max-width: 100%; }
-        .msg-hit { color: #137333; } .msg-out { color: #c5221f; } .msg-walk { color: #b06000; }
+        .msg-hit { color: #137333; }
+        .msg-out { color: #c5221f; }
+        .msg-walk { color: #b06000; }
         #hit-die-container { margin-top: 10px; display: flex; justify-content: center; gap: 15px; min-height: 100px; }
+
         .diamond-container { position: relative; width: 140px; height: 140px; margin: 5px auto; }
         .base { position: absolute; width: 36px; height: 36px; background: #fff; border: 3px solid #ccc; transform: rotate(45deg); cursor: pointer; transition: background-color 0.2s, border-color 0.2s; display: flex; align-items: center; justify-content: center; }
         .base-inner { transform: rotate(-45deg); font-size: 9px; font-weight: bold; color: #777; user-select: none; text-align: center; line-height: 1.1; max-width: 30px; overflow: hidden; }
         .base.occupied { background: #137333; border-color: #0b4b21; }
         .base.occupied .base-inner { color: white; }
-        #base-2nd { top: 0px; left: 52px; } #base-3rd { top: 52px; left: 0px; } #base-1st { top: 52px; left: 104px; }
+        #base-2nd { top: 0px; left: 52px; }
+        #base-3rd { top: 52px; left: 0px; }
+        #base-1st { top: 52px; left: 104px; }
+        
         .score-display { font-size: 14px; font-weight: bold; text-align: center; margin-top: 5px; color: #333; }
+
         .steal-box { background: #f8f9fa; border: 1px dashed #ccc; padding: 10px; border-radius: 6px; margin-top: 20px; text-align: center; width: 90%; }
         .steal-mini-btn { font-size: 12px; padding: 4px 8px; margin: 2px; }
         .active-steal-trait { background: #e67e22; color: white; border-color: #d35400; }
         .steal-act-btn { background: #fff3cd; color: #856404; border-color: #ffeeba; font-size: 14px; padding: 8px 12px; width: 100%; margin-top: 6px; border-radius: 5px; }
+
         .bunt-box { background: #f0f4ff; border: 1px dashed #aabfff; padding: 10px; border-radius: 6px; margin-top: 10px; text-align: center; width: 90%; }
         .bunt-mini-btn { font-size: 12px; padding: 4px 8px; margin: 2px; }
         .active-bunt-trait { background: #6f42c1; color: white; border-color: #5a32a3; }
         .bunt-act-btn { background: #e8eaff; color: #3730a3; border-color: #c7d2fe; font-size: 14px; padding: 8px 12px; width: 100%; margin-top: 6px; border-radius: 5px; }
+
+        /* Batter trait selector */
         .trait-row { display: flex; justify-content: center; gap: 12px; margin: 3px 0; flex-wrap: wrap; }
         .trait-group { display: flex; align-items: center; gap: 2px; font-size: 11px; }
         .trait-group span { color: #666; font-weight: bold; margin-right: 2px; }
         .trait-btn { font-size: 11px; padding: 3px 6px; margin: 1px; border-radius: 4px; }
-        .trait-btn.active-trait-p { background: #7c3aed; color: white; border-color: #5b21b6; }
-        .trait-btn.active-trait-s { background: #0891b2; color: white; border-color: #0e7490; }
-        .trait-btn.active-trait-c { background: #059669; color: white; border-color: #047857; }
+        .trait-btn.active-trait-p  { background: #7c3aed; color: white; border-color: #5b21b6; }
+        .trait-btn.active-trait-s  { background: #0891b2; color: white; border-color: #0e7490; }
+        .trait-btn.active-trait-c  { background: #059669; color: white; border-color: #047857; }
         .trait-btn.active-trait-norm { background: #9ca3af; color: white; border-color: #6b7280; }
-        #action-reminder { display: none; }
+
+        /* Mobile steal/bunt reminder badge */
+        #action-reminder {
+            display: none; /* shown only via JS on mobile */
+        }
         @media (max-width: 700px) {
-            body { padding: 4px; justify-content: flex-start; height: auto; min-height: 100vh; }
-            .app-container { flex-direction: column; gap: 4px; max-width: 100%; }
-            .left-panel, .right-panel { padding: 6px 10px; border-radius: 8px; }
-            .section-title { font-size: 11px; margin-bottom: 1px; }
+            #action-reminder {
+                display: none;
+                background: #137333;
+                color: white;
+                font-size: 13px;
+                font-weight: bold;
+                padding: 8px 14px;
+                border-radius: 20px;
+                text-align: center;
+                cursor: pointer;
+                margin: 0 auto 6px auto;
+                width: fit-content;
+                animation: reminder-pulse 1.2s infinite alternate;
+            }
+            @keyframes reminder-pulse {
+                from { box-shadow: 0 0 4px rgba(19,115,51,0.4); opacity: 0.85; }
+                to   { box-shadow: 0 0 14px rgba(19,115,51,0.9); opacity: 1; }
+            }
+        }
+
+        /* Read-only runner context in steal/bunt panels */
+        .runner-ctx { font-size: 11px; color: #555; font-style: italic; margin-bottom: 3px; }
+        /* ── MOBILE RESPONSIVE ─────────────────────────────────────────── */
+        @media (max-width: 700px) {
+            body {
+                padding: 4px;
+                justify-content: flex-start;
+                height: auto;
+                min-height: 100vh;
+            }
+            .app-container {
+                flex-direction: column;
+                gap: 4px;
+                max-width: 100%;
+            }
+            .left-panel, .right-panel {
+                padding: 6px 10px;
+                border-radius: 8px;
+            }
+            .section-title {
+                font-size: 11px;
+                margin-bottom: 1px;
+            }
             h2 { margin: 0 0 4px 0; font-size: 16px; }
-            button { font-size: 14px; padding: 7px 11px; min-height: 36px; margin: 2px; }
-            .diamond-container { width: 130px; height: 130px; }
+            hr { margin: 3px 0 !important; }
+
+            /* Default buttons */
+            button {
+                font-size: 14px;
+                padding: 7px 11px;
+                min-height: 36px;
+                margin: 2px;
+            }
+            .flex-row { gap: 6px; }
+
+            /* Pitcher die — compact */
+            .row { margin: 3px 0; }
+            .row button {
+                font-size: 12px;
+                padding: 5px 9px;
+                min-height: 30px;
+            }
+
+            /* Trait buttons — small and tight */
+            .trait-btn {
+                font-size: 11px;
+                padding: 4px 6px;
+                min-height: 28px;
+                margin: 1px;
+            }
+            .trait-row { gap: 3px; margin: 1px 0; }
+            .trait-group { gap: 1px; font-size: 10px; }
+            .trait-group span { margin-right: 1px; }
+
+            /* Play button */
+            #play-btn {
+                font-size: 15px;
+                padding: 8px 0;
+                margin-top: 3px;
+            }
+
+            /* Diamond — shrink slightly to save vertical space */
+            .diamond-container {
+                width: 130px;
+                height: 130px;
+                margin: 2px auto;
+            }
             .base { width: 38px; height: 38px; }
+            .base-inner { font-size: 9px; max-width: 32px; }
+            #base-2nd { top: 0px;  left: 46px; }
+            #base-3rd { top: 46px; left: 0px;  }
+            #base-1st { top: 46px; left: 92px; }
+
+            /* Outs buttons */
+            #out-cnt-1, #out-cnt-2, #out-cnt-3 {
+                font-size: 15px;
+                padding: 6px 16px;
+            }
+
+            /* Score and end inning */
+            .score-display { font-size: 12px; margin-top: 2px; }
+            #clear-bases-btn { font-size: 12px; padding: 7px; margin-top: 3px; }
+
+            /* Action buttons */
+            .action-btn {
+                font-size: 15px;
+                width: 80px;
+                padding: 9px 0;
+            }
+            /* Resolve outcome section */
+            .flex-row .action-btn { margin: 2px; }
+
+            /* Result + dice */
+            #result-msg { font-size: 14px; margin-top: 2px; min-height: 20px; }
+            #hit-details { font-size: 11px; margin-top: 2px; }
+            .dice-container { height: 72px; gap: 8px; margin: 4px 0; }
             .die-wrapper { width: 68px; height: 68px; }
-            #play-btn { font-size: 15px; }
-            #next-btn { font-size: 15px; }
+            .die-text { font-size: 23px; }
+            #total-display { font-size: 24px; margin: 2px 0; }
+            #hit-die-container { margin-top: 6px; min-height: 80px; }
+            .match-alert { font-size: 12px; margin: 2px 0; min-height: 14px; }
+
+            /* Right panel steal/bunt */
+            .steal-box, .bunt-box { width: 96%; margin-top: 6px; padding: 7px; }
+            .steal-act-btn, .bunt-act-btn { font-size: 13px; padding: 8px; }
+            .steal-mini-btn { font-size: 11px; padding: 5px 7px; min-height: 28px; }
+
+            /* Next batter */
+            #next-btn { font-size: 15px; padding: 9px 0; margin-top: 6px; }
         }
     </style>
 </head>
@@ -235,16 +467,21 @@
         let pHand = 'R';
         let bHand = ''; 
         let tens = 0, ones = 0, pitch = 0, mss = 0;
+
         let bases = { 1: null, 2: null, 3: null };
         let inningRuns = 0;
         let outCount = 0;
         let stealCatcherTrait = 'NORM';
-        let stealRunnerTrait = 'NORM';
-        let buntCatcherTrait = 'NORM';
-        let batterTraits = { power: 'NORM', speed: 'NORM', contact: 'NORM' };
-        const dieSteps = [4, 8, 12, 20];
 
-        function newRunner() { return { power: batterTraits.power, speed: batterTraits.speed, contact: batterTraits.contact }; }
+        let batterTraits = { power: 'NORM', speed: 'NORM', contact: 'NORM' };
+
+        const dieSteps = [4, 8, 12, 20];
+        const positionNames = { "1B": "first baseman (1B)", "2B": "second baseman (2B)", "3B": "third baseman (3B)", "SS": "shortstop (SS)", "LF": "left fielder (LF)", "CF": "center fielder (CF)", "RF": "right fielder (RF)" };
+
+        function newRunner() {
+            return { power: batterTraits.power, speed: batterTraits.speed, contact: batterTraits.contact };
+        }
+
         function traitLabel(runner) {
             if (!runner) return '';
             let tags = [];
@@ -253,47 +490,97 @@
             if (runner.contact !== 'NORM') tags.push(runner.contact);
             return tags.join(' ');
         }
+
         function scrollToActions() {
             let target = document.getElementById('steal-panel');
-            if (target && target.style.display !== 'none') target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            else { let bunt = document.getElementById('bunt-panel'); if (bunt) bunt.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+            if (target && target.style.display !== 'none') {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                let bunt = document.getElementById('bunt-panel');
+                if (bunt) bunt.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         }
+
         function updateActionReminder() {
             let badge = document.getElementById('action-reminder');
             if (!badge) return;
             let stealVisible = document.getElementById('steal-panel').style.display !== 'none';
             let buntVisible  = document.getElementById('bunt-panel').style.display !== 'none';
-            if (stealVisible && buntVisible) { badge.innerText = '⚡ Steal or Bunt available — tap to jump'; badge.style.display = 'block'; } 
-            else if (stealVisible) { badge.innerText = '🏃 Steal available — tap to jump'; badge.style.display = 'block'; } 
-            else if (buntVisible) { badge.innerText = '📦 Bunt available — tap to jump'; badge.style.display = 'block'; } 
-            else { badge.style.display = 'none'; }
+            if (stealVisible && buntVisible) {
+                badge.innerText = '⚡ Steal or Bunt available — tap to jump';
+                badge.style.display = 'block';
+            } else if (stealVisible) {
+                badge.innerText = '🏃 Steal available — tap to jump';
+                badge.style.display = 'block';
+            } else if (buntVisible) {
+                badge.innerText = '📦 Bunt available — tap to jump';
+                badge.style.display = 'block';
+            } else {
+                badge.style.display = 'none';
+            }
         }
-        function leadRunner() { return bases[3] || bases[2] || bases[1] || null; }
+
+        function leadRunner() {
+            return bases[3] || bases[2] || bases[1] || null;
+        }
+
         function renderBases() {
             const ids = { 1: 'base-1st', 2: 'base-2nd', 3: 'base-3rd' };
             const rtIds = { 1: 'rt-1st', 2: 'rt-2nd', 3: 'rt-3rd' };
             for (let b = 1; b <= 3; b++) {
                 let el = document.getElementById(ids[b]);
                 let rt = document.getElementById(rtIds[b]);
-                if (bases[b]) { el.classList.add('occupied'); rt.innerText = traitLabel(bases[b]); } 
-                else { el.classList.remove('occupied'); rt.innerText = ''; }
+                if (bases[b]) {
+                    el.classList.add('occupied');
+                    rt.innerText = traitLabel(bases[b]);
+                } else {
+                    el.classList.remove('occupied');
+                    rt.innerText = '';
+                }
             }
-            updateStealPanelVisibility(); updateBuntPanelVisibility();
+            updateStealPanelVisibility();
+            updateBuntPanelVisibility();
         }
-        function toggleBase(baseNum) { bases[baseNum] = bases[baseNum] ? null : { power:'NORM', speed:'NORM', contact:'NORM' }; renderBases(); }
+
+        function toggleBase(baseNum) {
+            bases[baseNum] = bases[baseNum] ? null : { power:'NORM', speed:'NORM', contact:'NORM' };
+            renderBases();
+        }
+
         function addOuts(amount) { outCount += amount; if (outCount > 3) outCount = 3; renderOutsDisplay(); }
-        function setOutManual(targetCount) { outCount = (outCount === targetCount) ? targetCount - 1 : targetCount; renderOutsDisplay(); }
+
+        function setOutManual(targetCount) {
+            outCount = (outCount === targetCount) ? targetCount - 1 : targetCount;
+            renderOutsDisplay();
+        }
+
         function renderOutsDisplay() {
             for (let i = 1; i <= 3; i++) {
                 let btn = document.getElementById('out-cnt-' + i);
                 i <= outCount ? btn.classList.add('active-out') : btn.classList.remove('active-out');
             }
             let resetBtn = document.getElementById('clear-bases-btn');
-            if (outCount >= 3) resetBtn.classList.add('illuminate-reset'); else resetBtn.classList.remove('illuminate-reset');
-            updateStealPanelVisibility(); updateBuntPanelVisibility();
+            if (outCount >= 3) resetBtn.classList.add('illuminate-reset');
+            else resetBtn.classList.remove('illuminate-reset');
+            updateStealPanelVisibility();
+            updateBuntPanelVisibility();
         }
-        function clearBases() { bases = { 1: null, 2: null, 3: null }; inningRuns = 0; outCount = 0; document.getElementById('inning-score').innerText = "0"; renderBases(); renderOutsDisplay(); }
-        function trackScore(runs) { if (outCount >= 3) return; if (runs > 0) { inningRuns += runs; document.getElementById('inning-score').innerText = inningRuns; } }
+
+        function clearBases() {
+            bases = { 1: null, 2: null, 3: null };
+            inningRuns = 0; outCount = 0;
+            document.getElementById('inning-score').innerText = "0";
+            renderBases(); renderOutsDisplay();
+        }
+
+        function trackScore(runs) {
+            if (outCount >= 3) return; 
+            if (runs > 0) {
+                inningRuns += runs;
+                document.getElementById('inning-score').innerText = inningRuns;
+            }
+        }
+
         function updateStealPanelVisibility() {
             let panel = document.getElementById('steal-panel');
             let container = document.getElementById('steal-actions-container');
@@ -307,13 +594,18 @@
             if (bases[2] && !bases[3]) options.push(`<button class="steal-act-btn" onclick="resolveSingleSteal(3)">Steal 3rd Base</button>`);
             if (bases[3]) options.push(`<button class="steal-act-btn" onclick="resolveSingleSteal(4)">Steal Home Plate</button>`);
             if (options.length > 0) {
-                panel.style.display = 'block'; container.innerHTML = options.join('');
-                let lr = leadRunner(); stealRunnerTrait = lr ? lr.speed : 'NORM';
-                ctxEl.innerText = traitLabel(lr) ? `Lead runner traits: ${traitLabel(lr)}` : '';
+                panel.style.display = 'block';
+                container.innerHTML = options.join('');
+                let lr = leadRunner();
+                let spd = lr ? lr.speed : 'NORM';
+                stealRunnerTrait = spd;
+                let label = traitLabel(lr);
+                ctxEl.innerText = label ? `Lead runner traits: ${label}` : '';
                 updateStealOdds();
             } else { panel.style.display = 'none'; }
             updateActionReminder();
         }
+
         function setBatterTrait(category, value) {
             batterTraits[category] = value;
             const groups = {
@@ -328,6 +620,7 @@
                 if (g.vals[i] === value) btn.classList.add(value === 'NORM' ? 'active-trait-norm' : g.cls);
             });
         }
+
         function resetBatterTraits() {
             batterTraits = { power: 'NORM', speed: 'NORM', contact: 'NORM' };
             ['tp-minus','tp-norm','tp-plus','tp-pp','ts-minus','ts-norm','ts-plus','tc-minus','tc-norm','tc-plus'].forEach(id => {
@@ -335,6 +628,12 @@
             });
             ['tp-norm','ts-norm','tc-norm'].forEach(id => document.getElementById(id).classList.add('active-trait-norm'));
         }
+
+        function setStealRunner(trait) {
+            stealRunnerTrait = trait;
+            updateStealOdds();
+        }
+
         function setStealCatcher(trait) {
             stealCatcherTrait = trait;
             ['norm', 'plus', 'minus'].forEach(t => document.getElementById('trait-c-' + t).classList.remove('active-steal-trait'));
@@ -342,6 +641,7 @@
             document.getElementById('trait-c-' + sub).classList.add('active-steal-trait');
             updateStealOdds();
         }
+
         function updateStealOdds() {
             let el = document.getElementById('steal-odds-line');
             if (!el) return;
@@ -358,18 +658,21 @@
             let homeStr = stealRunnerTrait === 'S+' ? ` · Home: ${s2>8?'impossible':`${s2}+ (${pct(sh)})`}` : ' · Home: S+ only';
             el.innerText = `d8 roll — 2nd: safe on ${s2}+ (${pct(s2)}) · 3rd: safe on ${s3}+ (${pct(s3)})${homeStr}`;
         }
+
         function updateBuntOdds() {
             let el = document.getElementById('bunt-odds-line');
             if (!el) return;
             let lr = leadRunner();
             let contact = lr ? lr.contact : 'NORM';
             let mod = (contact === 'C+') ? 1 : (contact === 'C-') ? -1 : 0;
-            let bothSafeOn = 6 - mod, lrAdvOn = 4 - mod;
+            let bothSafeOn = 6 - mod;
+            let lrAdvOn = 4 - mod;
             bothSafeOn = Math.min(Math.max(bothSafeOn, 1), 7);
             lrAdvOn    = Math.min(Math.max(lrAdvOn, 1), 7);
             function d6pct(n) { return n > 6 ? '0%' : n <= 1 ? '100%' : Math.round((7-n)/6*100)+'%'; }
             el.innerText = `d6 roll — LR advances: ${lrAdvOn}+ (${d6pct(lrAdvOn)}) · Both safe: ${bothSafeOn}+ (${d6pct(bothSafeOn)})`;
         }
+
         function setupStealDieVisual() {
             clearDisplay();
             document.getElementById('hit-die-label').innerText = "STEAL DIE";
@@ -377,22 +680,19 @@
             document.getElementById('hit-die-polygon').className.baseVal = "fill-orange outer-edge";
             document.getElementById('container-hit').style.display = 'block';
         }
-        function setupBuntDieVisual() {
-            clearDisplay();
-            document.getElementById('hit-die-label').innerText = "BUNT DIE";
-            document.getElementById('hit-die-label').style.color = "#3730a3";
-            document.getElementById('hit-die-polygon').className.baseVal = "fill-blue outer-edge";
-            document.getElementById('container-hit').style.display = 'block';
-        }
+
         function resetHitDieVisual() {
             document.getElementById('hit-die-label').innerText = "HIT DIE";
             document.getElementById('hit-die-label').style.color = "#137333";
             document.getElementById('hit-die-polygon').className.baseVal = "fill-green outer-edge";
         }
+
         function resolveSingleSteal(targetBase) {
             setupStealDieVisual();
             let rawRoll = Math.floor(Math.random() * 8) + 1;
-            let mod = (stealCatcherTrait === 'D-') ? 1 : (stealCatcherTrait === 'D+') ? -1 : 0;
+            let mod = 0;
+            if (stealCatcherTrait === 'D-') mod += 1;
+            if (stealCatcherTrait === 'D+') mod -= 1;
             if (stealRunnerTrait === 'S-') mod -= 2;
             let finalRoll = rawRoll + mod;
             document.getElementById('die-hit').innerText = rawRoll;
@@ -400,12 +700,22 @@
             if (targetBase === 2) isSafe = (finalRoll > 3 || (finalRoll === 3 && stealRunnerTrait === 'S+'));
             else if (targetBase === 3) isSafe = (finalRoll > 4 || (finalRoll === 4 && stealRunnerTrait === 'S+'));
             else if (targetBase === 4) isSafe = (finalRoll > 8 || (finalRoll === 8 && stealRunnerTrait === 'S+'));
+
             let msgBox = document.getElementById('result-msg');
             let runner = bases[targetBase - 1];
-            if (isSafe) { msgBox.className = "msg-hit"; msgBox.innerText = `SAFE! Stole ${targetBase === 4 ? 'Home' : (targetBase === 2 ? '2nd' : '3rd')}`; bases[targetBase - 1] = null; if (targetBase === 4) trackScore(1); else bases[targetBase] = runner; } 
-            else { msgBox.className = "msg-out"; msgBox.innerText = `OUT! Caught stealing.`; bases[targetBase - 1] = null; addOuts(1); }
+            if (isSafe) {
+                msgBox.className = "msg-hit";
+                msgBox.innerText = `SAFE! Stole ${targetBase === 4 ? 'Home' : (targetBase === 2 ? '2nd' : '3rd')}`;
+                bases[targetBase - 1] = null;
+                if (targetBase === 4) { trackScore(1); } else { bases[targetBase] = runner; }
+            } else {
+                msgBox.className = "msg-out";
+                msgBox.innerText = `OUT! Caught stealing.`;
+                bases[targetBase - 1] = null; addOuts(1);
+            }
             renderBases();
         }
+
         function resolveDoubleSteal(type) {
             setupStealDieVisual();
             let rawRoll = Math.floor(Math.random() * 8) + 1;
@@ -413,44 +723,566 @@
             let finalRoll = rawRoll + mod;
             document.getElementById('die-hit').innerText = rawRoll;
             let msgBox = document.getElementById('result-msg');
-            if (finalRoll <= 3) { msgBox.className = "msg-out"; msgBox.innerText = "OUT! Lead runner cut down."; if (type === '2nd_3rd') bases[2] = null; else bases[3] = null; addOuts(1); } 
-            else if (finalRoll <= 5) { msgBox.className = "msg-out"; msgBox.innerText = "OUT! Trailing runner cut down."; if (type === '2nd_3rd') { bases[3] = bases[2]; bases[2] = null; bases[1] = null; } else { trackScore(1); bases[3] = null; bases[2] = null; } addOuts(1); } 
-            else { msgBox.className = "msg-hit"; msgBox.innerText = "SUCCESS! Both runners safe."; if (type === '2nd_3rd') { bases[3] = bases[2]; bases[2] = bases[1]; bases[1] = null; } else { trackScore(1); bases[2] = bases[1] || bases[2]; bases[1] = null; bases[3] = null; } }
+            if (finalRoll <= 3) {
+                msgBox.className = "msg-out"; msgBox.innerText = "OUT! Lead runner cut down.";
+                if (type === '2nd_3rd') { bases[2] = null; }
+                else { bases[3] = null; }
+                addOuts(1);
+            } else if (finalRoll <= 5) {
+                msgBox.className = "msg-out"; msgBox.innerText = "OUT! Trailing runner cut down.";
+                if (type === '2nd_3rd') { bases[3] = bases[2]; bases[2] = null; bases[1] = null; }
+                else { trackScore(1); bases[3] = null; bases[2] = null; }
+                addOuts(1);
+            } else {
+                msgBox.className = "msg-hit"; msgBox.innerText = "SUCCESS! Both runners safe.";
+                if (type === '2nd_3rd') { bases[3] = bases[2]; bases[2] = bases[1]; bases[1] = null; }
+                else { trackScore(1); bases[2] = bases[1] || bases[2]; bases[1] = null; bases[3] = null; }
+            }
             renderBases();
         }
+
         function advanceBasesOnWalk() {
-            let runs = 0; let r1 = bases[1], r2 = bases[2], r3 = bases[3];
-            if (r1) { if (r2) { if (r3) runs++; else bases[3] = r2; bases[2] = r1; } bases[1] = newRunner(); } else bases[1] = newRunner();
+            let runs = 0;
+            let r1 = bases[1], r2 = bases[2], r3 = bases[3];
+            if (r1) {
+                if (r2) {
+                    if (r3) { runs++; }
+                    else { bases[3] = r2; }
+                    bases[2] = r1;
+                }
+                bases[1] = newRunner();
+            } else {
+                bases[1] = newRunner();
+            }
             renderBases(); trackScore(runs);
         }
+
         function advanceBasesOnHit(type, baseAdvancement) {
             let runs = 0;
-            if (type === "HR") { runs = (bases[3] ? 1 : 0) + (bases[2] ? 1 : 0) + (bases[1] ? 1 : 0) + 1; bases = { 1: null, 2: null, 3: null }; } 
-            else {
+            if (type === "HR") {
+                runs = (bases[3] ? 1 : 0) + (bases[2] ? 1 : 0) + (bases[1] ? 1 : 0) + 1;
+                bases = { 1: null, 2: null, 3: null };
+            } else {
                 let r1 = bases[1], r2 = bases[2], r3 = bases[3];
                 bases = { 1: null, 2: null, 3: null };
                 if (r3) { if (baseAdvancement >= 1) runs++; else bases[3] = r3; }
                 if (r2) { let dest = 2 + baseAdvancement; if (dest >= 4) runs++; else bases[dest] = r2; }
                 if (r1) { let dest = 1 + baseAdvancement; if (dest >= 4) runs++; else bases[dest] = r1; }
-                if (type === "SINGLE") bases[1] = newRunner(); else if (type === "DOUBLE") bases[2] = newRunner(); else if (type === "TRIPLE") bases[3] = newRunner();
+                let batter = newRunner();
+                if (type === "SINGLE") bases[1] = batter;
+                else if (type === "DOUBLE") bases[2] = batter;
+                else if (type === "TRIPLE") bases[3] = batter;
             }
             renderBases(); trackScore(runs);
         }
-        function setPitcherDie(size) { basePitcherDie = size; document.querySelectorAll('.left-panel button').forEach(b => { if(['p4','p8','p12','p20'].includes(b.id)) b.classList.remove('active-p'); }); document.getElementById('p' + size).classList.add('active-p'); updateMatchup(); updateDieVisualShape(getEffectiveDie()); }
-        function setPitcherHand(hand) { pHand = hand; document.getElementById('pHandL').classList.remove('active-hand'); document.getElementById('pHandR').classList.remove('active-hand'); document.getElementById('pHand' + hand).classList.add('active-hand'); updateMatchup(); updateDieVisualShape(getEffectiveDie()); }
-        function setBatterHand(hand) { bHand = hand; ['L','R','S'].forEach(h => { document.getElementById('bHand'+h).classList.remove('active-b', 'illuminate'); }); document.getElementById('bHand' + hand).classList.add('active-b'); let playBtn = document.getElementById('play-btn'); playBtn.classList.remove('faded'); playBtn.disabled = false; updateMatchup(); updateDieVisualShape(getEffectiveDie()); }
-        function getEffectiveDie() { if (!bHand) return basePitcherDie; if (pHand !== bHand || bHand === 'S') return dieSteps[Math.max(0, dieSteps.indexOf(basePitcherDie) - 1)]; return basePitcherDie; }
-        function updateDieVisualShape(dieSize) { let target = document.getElementById('pitcher-die-target'); let cached = document.getElementById('die-pitch').innerText; const svgs = {4: `<svg class="die-svg" viewBox="0 0 100 100"><polygon class="fill-blue outer-edge" points="50,5 5,85 95,85"/></svg>`, 8: `<svg class="die-svg" viewBox="0 0 100 100"><polygon class="fill-blue outer-edge" points="50,2 98,35 50,98 2,35"/></svg>`, 12: `<svg class="die-svg" viewBox="0 0 100 100"><polygon class="fill-blue outer-edge" points="50,2 95,25 78,85 22,85 5,25"/></svg>`, 20: `<svg class="die-svg" viewBox="0 0 100 100"><polygon class="fill-blue outer-edge" points="50,2 95,25 95,75 50,98 5,75 5,25"/></svg>`}; target.innerHTML = svgs[dieSize] + `<div id="die-pitch" class="die-text">${cached}</div>`; }
-        function updateMatchup() { let statusBox = document.getElementById('matchup-text'); if (!bHand) { statusBox.innerText = "Select Batter Stance"; return; } let eff = getEffectiveDie(); if (eff < basePitcherDie) { statusBox.innerText = "★ Advantage! d" + basePitcherDie + " ➔ d" + eff; statusBox.style.color = "#137333"; } else { statusBox.innerText = "Same-Hand Matchup (Full d" + basePitcherDie + ")"; statusBox.style.color = "#0055ff"; } }
-        function clearDisplay() { document.getElementById('result-msg').innerText = ''; document.getElementById('result-msg').className = ''; document.getElementById('hit-details').innerText = ''; document.getElementById('container-hit').style.display = 'none'; document.getElementById('container-def').style.display = 'none'; }
-        function playAtBat() { if (!bHand) return; clearDisplay(); tens = Math.floor(Math.random() * 10) * 10; ones = Math.floor(Math.random() * 10); pitch = Math.floor(Math.random() * getEffectiveDie()) + 1; mss = tens + ones + pitch; document.getElementById('die-tens').innerText = tens === 0 ? "00" : tens; document.getElementById('die-ones').innerText = ones; document.getElementById('die-pitch').innerText = pitch; document.getElementById('total-display').innerText = "MSS TOTAL: " + mss; ['hit-btn', 'out-btn', 'walk-btn'].forEach(id => { document.getElementById(id).classList.remove('faded'); document.getElementById(id).disabled = false; }); document.getElementById('play-btn').classList.add('faded'); document.getElementById('play-btn').disabled = true; }
-        function postResolutionLoop() { ['hit-btn', 'out-btn', 'walk-btn'].forEach(id => { document.getElementById(id).classList.add('faded'); document.getElementById(id).disabled = true; }); bHand = ''; ['L','R','S'].forEach(h => { document.getElementById('bHand'+h).classList.remove('active-b'); document.getElementById('bHand'+h).classList.add('illuminate'); }); resetBatterTraits(); updateMatchup(); }
-        function handleHit() { resetHitDieVisual(); let hitRoll = Math.floor(Math.random() * 20) + 1; document.getElementById('die-hit').innerText = hitRoll; document.getElementById('container-hit').style.display = 'block'; let adjRoll = hitRoll + ((batterTraits.power === 'P+') ? 1 : (batterTraits.power === 'P++') ? 2 : (batterTraits.power === 'P-') ? -1 : 0); if (adjRoll >= 3 && adjRoll <= 6) { triggerDefenseRoll("SINGLE", {3:"1B", 4:"2B", 5:"3B", 6:"SS"}[adjRoll]); return; } else if (adjRoll >= 15 && adjRoll <= 17) { triggerDefenseRoll("DOUBLE", {15:"LF", 16:"CF", 17:"RF"}[adjRoll]); return; } else if (adjRoll >= 19) advanceBasesOnHit("HR", 4); else if (adjRoll >= 10) advanceBasesOnHit("SINGLE", 2); else advanceBasesOnHit("SINGLE", 1); postResolutionLoop(); }
-        function triggerDefenseRoll(type, pos) { let defRoll = Math.floor(Math.random() * 12) + 1; document.getElementById('die-def').innerText = defRoll; document.getElementById('container-def').style.display = 'block'; let msg = document.getElementById('result-msg'); if (defRoll === 12) { msg.innerText = "OUT!"; addOuts(1); } else { let held = (defRoll >= 3 && defRoll <= 9); advanceBasesOnHit(type, held ? (type === "SINGLE" ? 1 : 2) : (type === "SINGLE" ? 2 : 3)); } postResolutionLoop(); }
-        function handleOut() { addOuts(1); postResolutionLoop(); }
-        function handleWalk() { advanceBasesOnWalk(); postResolutionLoop(); }
+
+        function setPitcherDie(size) {
+            basePitcherDie = size;
+            document.querySelectorAll('.left-panel button').forEach(b => { if(['p4','p8','p12','p20'].includes(b.id)) b.classList.remove('active-p'); });
+            document.getElementById('p' + size).classList.add('active-p');
+            updateMatchup(); updateDieVisualShape(getEffectiveDie());
+        }
+
+        function setPitcherHand(hand) {
+            pHand = hand;
+            document.getElementById('pHandL').classList.remove('active-hand'); document.getElementById('pHandR').classList.remove('active-hand');
+            document.getElementById('pHand' + hand).classList.add('active-hand');
+            updateMatchup(); updateDieVisualShape(getEffectiveDie());
+        }
+
+        function setBatterHand(hand) {
+            bHand = hand;
+            ['L','R','S'].forEach(h => { document.getElementById('bHand'+h).classList.remove('active-b', 'illuminate'); });
+            document.getElementById('bHand' + hand).classList.add('active-b');
+            let playBtn = document.getElementById('play-btn'); playBtn.classList.remove('faded'); playBtn.disabled = false;
+            updateMatchup(); updateDieVisualShape(getEffectiveDie());
+        }
+
+        function getEffectiveDie() {
+            if (!bHand) return basePitcherDie; 
+            if (pHand !== bHand || bHand === 'S') return dieSteps[Math.max(0, dieSteps.indexOf(basePitcherDie) - 1)];
+            return basePitcherDie;
+        }
+
+        function updateDieVisualShape(dieSize) {
+            let target = document.getElementById('pitcher-die-target');
+            let cachedValue = document.getElementById('die-pitch') ? document.getElementById('die-pitch').innerText : "0";
+            const svgs = {4: `<svg class="die-svg" viewBox="0 0 100 100"><polygon class="fill-blue outer-edge" points="50,5 5,85 95,85"/></svg>`, 8: `<svg class="die-svg" viewBox="0 0 100 100"><polygon class="fill-blue outer-edge" points="50,2 98,35 50,98 2,35"/></svg>`, 12: `<svg class="die-svg" viewBox="0 0 100 100"><polygon class="fill-blue outer-edge" points="50,2 95,25 78,85 22,85 5,25"/></svg>`, 20: `<svg class="die-svg" viewBox="0 0 100 100"><polygon class="fill-blue outer-edge" points="50,2 95,25 95,75 50,98 5,75 5,25"/></svg>`};
+            target.innerHTML = svgs[dieSize] + `<div id="die-pitch" class="die-text">${cachedValue}</div>`;
+        }
+
+        function updateMatchup() {
+            let statusBox = document.getElementById('matchup-text');
+            if (!bHand) { statusBox.innerText = "Select Batter Stance"; statusBox.style.color = "#333"; return; }
+            let effective = getEffectiveDie();
+            if (effective < basePitcherDie) { statusBox.innerText = "★ Advantage! d" + basePitcherDie + " ➔ d" + effective; statusBox.style.color = "#137333"; }
+            else { statusBox.innerText = "Same-Hand Matchup (Full d" + basePitcherDie + ")"; statusBox.style.color = "#0055ff"; }
+        }
+
+        function clearDisplay() {
+            document.getElementById('result-msg').innerText = ''; document.getElementById('result-msg').className = '';
+            document.getElementById('hit-details').innerText = '';
+            document.getElementById('container-hit').style.display = 'none'; document.getElementById('container-def').style.display = 'none';
+        }
+
+        function playAtBat() {
+            if (!bHand) return;
+            clearDisplay();
+            tens = Math.floor(Math.random() * 10) * 10; ones = Math.floor(Math.random() * 10);
+            pitch = Math.floor(Math.random() * getEffectiveDie()) + 1;
+            mss = tens + ones + pitch;
+            document.getElementById('die-tens').innerText = tens === 0 ? "00" : tens;
+            document.getElementById('die-ones').innerText = ones;
+            document.getElementById('die-pitch').innerText = pitch;
+            document.getElementById('total-display').innerText = "MSS TOTAL: " + mss;
+            ['hit-btn', 'out-btn', 'walk-btn'].forEach(id => { document.getElementById(id).classList.remove('faded'); document.getElementById(id).disabled = false; });
+            document.getElementById('play-btn').classList.add('faded'); document.getElementById('play-btn').disabled = true;
+        }
+
+        function postResolutionLoop() {
+            ['hit-btn', 'out-btn', 'walk-btn'].forEach(id => { document.getElementById(id).classList.add('faded'); document.getElementById(id).disabled = true; });
+            bHand = ''; ['L','R','S'].forEach(h => { document.getElementById('bHand'+h).classList.remove('active-b'); document.getElementById('bHand'+h).classList.add('illuminate'); });
+            resetBatterTraits();
+            ['tp-norm','ts-norm','tc-norm'].forEach(id => document.getElementById(id).classList.add('illuminate-trait'));
+            updateMatchup();
+        }
+
+        function handleHit() {
+            resetHitDieVisual();
+            let hitRoll = Math.floor(Math.random() * 20) + 1;
+            document.getElementById('die-hit').innerText = hitRoll;
+            document.getElementById('container-hit').style.display = 'block';
+            let msgBox = document.getElementById('result-msg');
+            msgBox.className = "msg-hit";
+
+            let powerShift = (batterTraits.power === 'P+') ? 1 : (batterTraits.power === 'P++') ? 2 : (batterTraits.power === 'P-') ? -1 : 0;
+            let adjRoll = hitRoll + powerShift;
+
+            const singleShort = [
+                "SINGLE — bleeder through the left side",
+                "SINGLE — swinging bunt, beats it out",
+                "SINGLE — flare to shallow center",
+                "SINGLE — squib up the middle",
+            ];
+            const singleAdv2 = [
+                "SINGLE — gap shot, runners moving",
+                "SINGLE — line drive to left, ball gets away",
+                "SINGLE — bloop to right, they're not stopping",
+            ];
+
+            if (adjRoll <= 0) {
+                msgBox.innerText = pick(singleShort);
+                advanceBasesOnHit("SINGLE", 1);
+            } else if (adjRoll === 1) {
+                msgBox.innerText = pick(singleShort);
+                advanceBasesOnHit("SINGLE", 1);
+            } else if (adjRoll === 2) {
+                msgBox.innerText = pick(singleShort);
+                advanceBasesOnHit("SINGLE", 1);
+            } else if (adjRoll >= 3 && adjRoll <= 6) {
+                const pos = {3:"1B", 4:"2B", 5:"3B", 6:"SS"}[adjRoll] || {3:"1B",4:"2B",5:"3B",6:"SS"}[Math.min(adjRoll,6)];
+                const dir = {"1B":"toward first","2B":"up the middle","3B":"down the line","SS":"in the hole"};
+                msgBox.innerText = `SINGLE — sharp grounder ${dir[pos]}, ${pos} must field it (DEF roll)`;
+                triggerDefenseRoll("SINGLE", pos); return;
+            } else if (adjRoll >= 7 && adjRoll <= 9) {
+                msgBox.innerText = pick(singleShort);
+                advanceBasesOnHit("SINGLE", 1);
+            } else if (adjRoll >= 10 && adjRoll <= 14) {
+                msgBox.innerText = pick(singleAdv2);
+                document.getElementById('hit-details').innerText = 'Runners advance two bases.';
+                advanceBasesOnHit("SINGLE", 2);
+            } else if (adjRoll === 15) {
+                msgBox.innerText = "DOUBLE — scorched down the left-field line (DEF roll: LF)";
+                triggerDefenseRoll("DOUBLE", "LF"); return;
+            } else if (adjRoll === 16) {
+                msgBox.innerText = "DOUBLE — ripped into the gap (DEF roll: CF)";
+                triggerDefenseRoll("DOUBLE", "CF"); return;
+            } else if (adjRoll === 17) {
+                msgBox.innerText = "DOUBLE — lasered to right-center (DEF roll: RF)";
+                triggerDefenseRoll("DOUBLE", "RF"); return;
+            } else if (adjRoll === 18) {
+                msgBox.innerText = "DOUBLE — off the wall and rolling, runners advancing";
+                document.getElementById('hit-details').innerText = 'Runners advance three bases.';
+                advanceBasesOnHit("DOUBLE", 3);
+            } else {
+                msgBox.innerText = "He got all of it — GONE! HR 🏠";
+                advanceBasesOnHit("HR", 4);
+            }
+            postResolutionLoop();
+        }
+
+        function triggerDefenseRoll(hitType, pos) {
+            let defRoll = Math.floor(Math.random() * 12) + 1;
+            document.getElementById('die-def').innerText = defRoll;
+            document.getElementById('container-def').style.display = 'block';
+            let msgBox = document.getElementById('result-msg');
+            let detailsBox = document.getElementById('hit-details');
+            if (defRoll === 12) {
+                const grabs = ["Incredible diving stop — OUT (robbed!)","Reaches back and hauls it in — OUT (spectacular)","Full extension, takes one away — OUT"];
+                msgBox.innerText = grabs[Math.floor(Math.random()*grabs.length)];
+                msgBox.className = "msg-out"; addOuts(1);
+            } else {
+                let held = (defRoll >= 3 && defRoll <= 9);
+                if (hitType === "DOUBLE") {
+                    const doubleContact = { "LF": "down the left-field line", "CF": "into the gap", "RF": "to right-center" };
+                    if (held) {
+                        msgBox.innerText = `DOUBLE — ${doubleContact[pos] || 'to the outfield'}, ${pos} cuts it off`;
+                        detailsBox.innerText = 'Batter held to 2nd; runners advance 2.';
+                        advanceBasesOnHit("DOUBLE", 2);
+                    } else {
+                        msgBox.innerText = `DOUBLE — ${doubleContact[pos] || 'to the outfield'}, gets past ${pos}`;
+                        detailsBox.innerText = 'Ball rolls to the wall; runners advance 3.';
+                        advanceBasesOnHit("DOUBLE", 3);
+                    }
+                } else {
+                    const singleContact = { "1B": "toward first", "2B": "up the middle", "3B": "down the line", "SS": "in the hole" };
+                    if (held) {
+                        msgBox.innerText = `SINGLE — grounder ${singleContact[pos] || 'to the infield'}, ${pos} fields it cleanly`;
+                        detailsBox.innerText = 'Runners hold on the play.';
+                        advanceBasesOnHit("SINGLE", 1);
+                    } else {
+                        msgBox.innerText = `SINGLE — grounder ${singleContact[pos] || 'to the infield'}, ${pos} bobbles it`;
+                        detailsBox.innerText = 'Error on the play; runners take an extra base.';
+                        advanceBasesOnHit("SINGLE", 2);
+                    }
+                }
+            }
+            postResolutionLoop();
+        }
+
+        function pick(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
+
+        function handleOut() {
+            let msgBox = document.getElementById('result-msg');
+            let detailsBox = document.getElementById('hit-details');
+            let isLineout = (Math.floor(Math.random()*4)+1 === 4);
+            msgBox.className = "msg-out";
+            detailsBox.innerText = '';
+
+            const strikeoutFlavor = [
+                "Chases the breaking ball — K",
+                "Punched out looking — ꓘ",
+                "Swings through the heater — K",
+                "Caught frozen at the knees — ꓘ",
+                "Fanned on a filthy changeup — K",
+            ];
+            const groundFlavor = {
+                3: ["Chopper to the right side — G3","Slow roller, first baseman charges — G3","Tapper right at first — G3"],
+                4: ["Routine grounder to second — 4-3","Up the middle, second baseman ranges — 4-3","Bouncer to second — 4-3"],
+                5: ["Nubber down the line, third baseman pounces — 5-3","Hot shot at the hot corner — 5-3","Hard shot to third — 5-3"],
+                6: ["In the hole, shortstop dives and fires — 6-3","Backhander deep in the hole — 6-3","Scooped and fired from short — 6-3"],
+            };
+            const lineFlavor = {
+                3: ["Frozen rope right at first — L3","Laser to the first baseman — L3"],
+                4: ["Screamer up the middle, second baseman snares it — L4","Lined right at second — L4"],
+                5: ["Bullet to the third baseman — L5","Ripped, but right at third — L5"],
+                6: ["Lineout to short — L6","Smoked, but the shortstop doesn't move — L6"],
+            };
+            const flyFlavor = {
+                7: ["Lazy fly to left — F7","High can of corn to left — F7","Routine pop to left — F7"],
+                8: ["Routine fly to center — F8","Easy one to the centerfielder — F8","Canned goods to center — F8"],
+                9: ["Fly ball to right, he camps under it — F9","Pulled to right, caught — F9","Long fly to right, no trouble — F9"],
+            };
+
+            let b1 = bases[1], b2 = bases[2], b3 = bases[3];
+            let noRunners = !b1 && !b2 && !b3;
+            let runnerDetail = '';
+
+            if (ones >= 0 && ones <= 2) {
+                msgBox.innerText = pick(strikeoutFlavor);
+                addOuts(1);
+                postResolutionLoop();
+                return;
+            }
+
+            if (ones >= 3 && ones <= 6) {
+                let flavor = isLineout ? pick(lineFlavor[ones]) : pick(groundFlavor[ones]);
+                msgBox.innerText = flavor;
+
+                if (isLineout || noRunners) {
+                    if (isLineout && !noRunners) runnerDetail = 'Runners hold — no advancement on a liner.';
+                    addOuts(1);
+                } else {
+                    addOuts(1);
+                    let detail = applyInfieldGrounder();
+                    renderBases();
+
+                    if (outCount >= 3) {
+                    } else if (detail.startsWith('TRIPLE PLAY')) {
+                        msgBox.innerText = "Lined into a TRIPLE PLAY!";
+                        runnerDetail = detail;
+                    } else if (detail.startsWith('DOUBLE PLAY')) {
+                        const dpContact = {
+                            3: ["Chopper to first, steps on the bag — DP! 3U","Tapper to first, no time to turn — DP! 3U"],
+                            4: ["Grounder to second, pivots and fires — DP! 4-6-3","Up the middle, turns two — DP! 4-6-3"],
+                            5: ["Shot to third, around the horn — DP! 5-4-3","Hot smash to third, they turn two — DP! 5-4-3"],
+                            6: ["In the hole, fires to second, relay to first — DP! 6-4-3","Backhander by the shortstop, turns the DP — 6-4-3"],
+                        };
+                        msgBox.innerText = pick(dpContact[ones] || dpContact[6]);
+                        runnerDetail = detail;
+                    } else {
+                        runnerDetail = detail;
+                    }
+                }
+                detailsBox.innerText = runnerDetail;
+                postResolutionLoop();
+                return;
+            }
+
+            if (ones >= 7 && ones <= 9) {
+                let flavor = pick(flyFlavor[ones]);
+                msgBox.innerText = flavor;
+                addOuts(1);
+                if (!noRunners && outCount < 3) {
+                    runnerDetail = applyOutfieldFly();
+                    renderBases();
+                }
+                detailsBox.innerText = runnerDetail;
+                postResolutionLoop();
+                return;
+            }
+
+            msgBox.innerText = "Routine out — fielded";
+            addOuts(1);
+            postResolutionLoop();
+        }
+
+        function applyInfieldGrounder() {
+            let r1 = bases[1], r2 = bases[2], r3 = bases[3];
+            let b1 = !!r1, b2 = !!r2, b3 = !!r3;
+            let detail = '';
+            let is3BorSS = (ones === 5 || ones === 6);
+            let batter = newRunner();
+
+            if (b1 && b2 && b3) {
+                if (mss <= 49) {
+                    detail = 'FC — Batter out at first; 1st→2nd, 2nd→3rd, 3rd scores.';
+                    bases = { 1: null, 2: r1, 3: r2 }; trackScore(1);
+                } else if (mss <= 69) {
+                    detail = 'FC — Runner out at 2nd; batter safe at 1st; 2nd→3rd, 3rd scores.';
+                    bases = { 1: batter, 2: null, 3: r2 }; trackScore(1);
+                } else {
+                    detail = 'FC — Runner on 3rd out at home; batter to 1st, runners advance.';
+                    bases = { 1: batter, 2: r1, 3: r2 }; addOuts(1);
+                }
+                return detail;
+            }
+
+            if (!b1 && b2 && b3) {
+                if (is3BorSS || mss >= 70) {
+                    detail = 'Batter out; 2nd and 3rd hold.';
+                } else {
+                    detail = 'Batter out at 1st; 2nd→3rd, 3rd scores.';
+                    bases = { 1: null, 2: null, 3: r2 }; trackScore(1);
+                }
+                return detail;
+            }
+
+            if (b1 && !b2 && b3) {
+                if (mss <= 49) {
+                    if (is3BorSS) {
+                        detail = 'FC — Batter out; 1st→2nd; 3rd holds.';
+                        bases = { 1: null, 2: r1, 3: r3 };
+                    } else {
+                        detail = 'FC — Batter out; 1st→2nd; 3rd scores.';
+                        bases = { 1: null, 2: r1, 3: null }; trackScore(1);
+                    }
+                } else if (mss <= 69) {
+                    if (is3BorSS) {
+                        detail = 'FC — Runner out at 2nd; batter safe at 1st; 3rd holds.';
+                        bases = { 1: batter, 2: null, 3: r3 };
+                    } else {
+                        detail = 'FC — Runner out at 2nd; batter safe at 1st; 3rd scores.';
+                        bases = { 1: batter, 2: null, 3: null }; trackScore(1);
+                    }
+                } else {
+                    detail = 'DOUBLE PLAY — Batter and runner on 1st out; runner on 3rd holds.';
+                    bases = { 1: null, 2: null, 3: r3 }; addOuts(1);
+                }
+                return detail;
+            }
+
+            if (b1 && b2 && !b3) {
+                if (mss <= 49) {
+                    detail = 'FC — Batter out; 1st→2nd, 2nd→3rd.';
+                    bases = { 1: null, 2: r1, 3: r2 };
+                } else if (mss <= 69) {
+                    detail = 'FC — Runner out at 2nd; batter safe at 1st; 2nd→3rd.';
+                    bases = { 1: batter, 2: null, 3: r2 };
+                } else {
+                    if (mss > 100) {
+                        detail = 'TRIPLE PLAY — All three out!';
+                        bases = { 1: null, 2: null, 3: null }; addOuts(2);
+                    } else {
+                        detail = 'DOUBLE PLAY — Batter and runner on 1st out; 2nd→3rd.';
+                        bases = { 1: null, 2: null, 3: r2 }; addOuts(1);
+                    }
+                }
+                return detail;
+            }
+
+            if (!b1 && !b2 && b3) {
+                if (is3BorSS) {
+                    detail = 'Batter out; 3rd holds (5/6 on table).';
+                } else if (mss <= 49) {
+                    detail = 'Batter out; 3rd scores.';
+                    bases[3] = null; trackScore(1);
+                } else {
+                    detail = 'Batter out; 3rd holds.';
+                }
+                return detail;
+            }
+
+            if (!b1 && b2 && !b3) {
+                if (mss <= 49 && !is3BorSS) {
+                    detail = 'Batter out; FC — 2nd→3rd.';
+                    bases = { 1: null, 2: null, 3: r2 };
+                } else {
+                    detail = 'Batter out; 2nd holds.';
+                }
+                return detail;
+            }
+
+            if (b1 && !b2 && !b3) {
+                if (mss <= 49) {
+                    detail = 'FC — Batter out; 1st→2nd.';
+                    bases = { 1: null, 2: r1, 3: null };
+                } else if (mss <= 69) {
+                    detail = 'FC — Runner out at 2nd; batter safe at 1st.';
+                    bases[1] = batter;
+                } else {
+                    detail = 'DOUBLE PLAY — Batter and runner on 1st both out.';
+                    bases[1] = null; addOuts(1);
+                }
+                return detail;
+            }
+
+            return '';
+        }
+
+        function applyOutfieldFly() {
+            let r1 = bases[1], r2 = bases[2], r3 = bases[3];
+            let b1 = !!r1, b2 = !!r2, b3 = !!r3;
+            let detail = '';
+            let highMSS = mss >= 70;
+
+            if (b1 && b2 && b3) {
+                if (highMSS) { detail = '1st, 2nd, and 3rd hold.'; }
+                else { detail = '1st holds; 2nd→3rd; 3rd scores.'; bases = { 1: r1, 2: null, 3: r2 }; trackScore(1); }
+            } else if (!b1 && b2 && b3) {
+                if (highMSS) { detail = '2nd and 3rd hold.'; }
+                else { detail = '2nd→3rd; 3rd scores.'; bases = { 1: null, 2: null, 3: r2 }; trackScore(1); }
+            } else if (b1 && !b2 && b3) {
+                if (highMSS) { detail = '1st and 3rd hold.'; }
+                else { detail = '1st holds; 3rd scores.'; bases[3] = null; trackScore(1); }
+            } else if (b1 && b2 && !b3) {
+                if (highMSS) { detail = '1st and 2nd hold.'; }
+                else { detail = '1st holds; 2nd→3rd.'; bases = { 1: r1, 2: null, 3: r2 }; }
+            } else if (!b1 && !b2 && b3) {
+                detail = '3rd scores.'; bases[3] = null; trackScore(1);
+            } else if (!b1 && b2 && !b3) {
+                if (highMSS) { detail = '2nd holds.'; }
+                else { detail = '2nd→3rd.'; bases = { 1: null, 2: null, 3: r2 }; }
+            } else if (b1 && !b2 && !b3) {
+                detail = '1st holds.';
+            }
+            return detail;
+        }
+
+        function handleWalk() {
+            const walkFlavor = [
+                "Ball four, take your base — BB",
+                "Couldn't find the zone — BB",
+                "Paint job fails, he goes to first — BB",
+                "Nibbled himself into a walk — BB",
+            ];
+            let msg = walkFlavor[Math.floor(Math.random()*walkFlavor.length)];
+            document.getElementById('result-msg').innerText = msg;
+            advanceBasesOnWalk(); postResolutionLoop();
+        }
         function nextBatter() { clearDisplay(); postResolutionLoop(); }
-        function resolveBunt(leadBase) { setupBuntDieVisual(); let rawRoll = Math.floor(Math.random() * 6) + 1; let mod = (leadRunner().contact === 'C+') ? 1 : (leadRunner().contact === 'C-') ? -1 : 0; let finalRoll = rawRoll + mod; document.getElementById('die-hit').innerText = rawRoll; if (finalRoll <= 2) { bases[leadBase] = null; bases[1] = newRunner(); addOuts(1); } else { if (leadBase === 3) trackScore(1); else bases[leadBase + 1] = bases[leadBase]; bases[leadBase] = null; if (finalRoll <= 5) addOuts(1); else bases[1] = newRunner(); } renderBases(); }
+
+        function updateBuntPanelVisibility() {
+            let panel = document.getElementById('bunt-panel');
+            let container = document.getElementById('bunt-actions-container');
+            let ctxEl = document.getElementById('bunt-runner-ctx');
+            container.innerHTML = '';
+            let anyRunner = bases[1] || bases[2] || bases[3];
+            if (!anyRunner || outCount >= 3) { panel.style.display = 'none'; updateActionReminder(); return; }
+
+            let leadBase = bases[3] ? 3 : bases[2] ? 2 : 1;
+            let labels = { 1: '1st', 2: '2nd', 3: '3rd' };
+            let targetLabels = { 1: '2nd', 2: '3rd', 3: 'Home' };
+
+            let lr = leadRunner();
+            let contact = lr ? lr.contact : 'NORM';
+            buntCatcherTrait = contact; 
+            let label = traitLabel(lr);
+            ctxEl.innerText = label ? `Lead runner traits: ${label}` : '';
+
+            let btnLabel = `Bunt (LR on ${labels[leadBase]} → ${targetLabels[leadBase]})`;
+            container.innerHTML = `<button class="bunt-act-btn" onclick="resolveBunt(${leadBase})">${btnLabel}</button>`;
+            panel.style.display = 'block';
+            updateBuntOdds();
+            updateActionReminder();
+        }
+
+        function setupBuntDieVisual() {
+            clearDisplay();
+            document.getElementById('hit-die-label').innerText = "BUNT DIE";
+            document.getElementById('hit-die-label').style.color = "#3730a3";
+            document.getElementById('hit-die-polygon').className.baseVal = "fill-blue outer-edge";
+            document.getElementById('container-hit').style.display = 'block';
+        }
+
+        function resolveBunt(leadBase) {
+            setupBuntDieVisual();
+            let rawRoll = Math.floor(Math.random() * 6) + 1;
+            let lr = leadRunner();
+            let contact = lr ? lr.contact : 'NORM';
+            let mod = (contact === 'C+') ? 1 : (contact === 'C-') ? -1 : 0;
+            let finalRoll = rawRoll + mod;
+            document.getElementById('die-hit').innerText = rawRoll;
+
+            let msgBox = document.getElementById('result-msg');
+            let toLabel = ['','2nd','3rd','Home'][leadBase];
+            let lrRunner = bases[leadBase]; 
+            let batter = newRunner();
+
+            if (finalRoll <= 2) {
+                msgBox.className = "msg-out";
+                msgBox.innerText = `BUNT: LR out at ${toLabel} — Batter safe at 1st (2-3)`;
+                bases[leadBase] = null;
+                bases[1] = batter;
+                addOuts(1);
+            } else if (finalRoll === 3) {
+                if (leadBase === 3) {
+                    msgBox.className = "msg-out";
+                    msgBox.innerText = `BUNT: LR out at Home — Batter safe at 1st (2U)`;
+                    bases[3] = null; bases[1] = batter; addOuts(1);
+                } else {
+                    msgBox.className = "msg-out";
+                    msgBox.innerText = `BUNT: LR advances to ${toLabel} — Batter out (2-3)`;
+                    bases[leadBase] = null;
+                    if (leadBase + 1 <= 3) bases[leadBase + 1] = lrRunner;
+                    addOuts(1);
+                }
+            } else if (finalRoll <= 5) {
+                msgBox.className = "msg-out";
+                msgBox.innerText = `BUNT: LR advances to ${toLabel} — Batter out (2-3)`;
+                bases[leadBase] = null;
+                if (leadBase === 3) { trackScore(1); } else bases[leadBase + 1] = lrRunner;
+                addOuts(1);
+            } else {
+                msgBox.className = "msg-hit";
+                msgBox.innerText = `BUNT: LR advances to ${toLabel} — Batter safe at 1st (S+: Single/DEF 3B)`;
+                bases[leadBase] = null;
+                if (leadBase === 3) { trackScore(1); } else bases[leadBase + 1] = lrRunner;
+                bases[1] = batter;
+            }
+            renderBases();
+        }
+
         resetBatterTraits();
     </script>
 </body>
