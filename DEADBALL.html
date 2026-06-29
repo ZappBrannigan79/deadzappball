@@ -184,6 +184,31 @@
         .trait-btn.active-trait-c  { background: #059669; color: white; border-color: #047857; }
         .trait-btn.active-trait-norm { background: #9ca3af; color: white; border-color: #6b7280; }
 
+        /* Mobile steal/bunt reminder badge */
+        #action-reminder {
+            display: none; /* shown only via JS on mobile */
+        }
+        @media (max-width: 700px) {
+            #action-reminder {
+                display: none;
+                background: #137333;
+                color: white;
+                font-size: 13px;
+                font-weight: bold;
+                padding: 8px 14px;
+                border-radius: 20px;
+                text-align: center;
+                cursor: pointer;
+                margin: 0 auto 6px auto;
+                width: fit-content;
+                animation: reminder-pulse 1.2s infinite alternate;
+            }
+            @keyframes reminder-pulse {
+                from { box-shadow: 0 0 4px rgba(19,115,51,0.4); opacity: 0.85; }
+                to   { box-shadow: 0 0 14px rgba(19,115,51,0.9); opacity: 1; }
+            }
+        }
+
         /* Read-only runner context in steal/bunt panels */
         .runner-ctx { font-size: 11px; color: #555; font-style: italic; margin-bottom: 3px; }
         /* ── MOBILE RESPONSIVE ─────────────────────────────────────────── */
@@ -384,6 +409,7 @@
         </div>
         
         <div class="right-panel">
+            <div id="action-reminder" onclick="scrollToActions()"></div>
             <div class="dice-container">
                 <div class="die-wrapper">
                     <svg class="die-svg" viewBox="0 0 100 100"><polygon class="fill-blue outer-edge" points="50,5 95,50 50,95 5,50"/><line x1="50" y1="5" x2="50" y2="95"/><line x1="5" y1="50" x2="95" y2="50"/></svg>
@@ -467,6 +493,35 @@
             return tags.join(' ');
         }
 
+        function scrollToActions() {
+            let target = document.getElementById('steal-panel');
+            if (target && target.style.display !== 'none') {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                let bunt = document.getElementById('bunt-panel');
+                if (bunt) bunt.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function updateActionReminder() {
+            let badge = document.getElementById('action-reminder');
+            if (!badge) return;
+            let stealVisible = document.getElementById('steal-panel').style.display !== 'none';
+            let buntVisible  = document.getElementById('bunt-panel').style.display !== 'none';
+            if (stealVisible && buntVisible) {
+                badge.innerText = '⚡ Steal or Bunt available — tap to jump';
+                badge.style.display = 'block';
+            } else if (stealVisible) {
+                badge.innerText = '🏃 Steal available — tap to jump';
+                badge.style.display = 'block';
+            } else if (buntVisible) {
+                badge.innerText = '📦 Bunt available — tap to jump';
+                badge.style.display = 'block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
         function leadRunner() {
             // Highest occupied base is the lead runner
             return bases[3] || bases[2] || bases[1] || null;
@@ -535,7 +590,7 @@
             let container = document.getElementById('steal-actions-container');
             let ctxEl = document.getElementById('steal-runner-ctx');
             container.innerHTML = '';
-            if (outCount >= 3) { panel.style.display = 'none'; return; }
+            if (outCount >= 3) { panel.style.display = 'none'; updateActionReminder(); return; }
             let options = [];
             if (bases[1] && bases[2] && !bases[3]) options.push(`<button class="steal-act-btn" onclick="resolveDoubleSteal('2nd_3rd')">Double Steal (2nd & 3rd)</button>`);
             else if (!bases[1] && bases[2] && bases[3]) options.push(`<button class="steal-act-btn" onclick="resolveDoubleSteal('3rd_Home')">Double Steal (3rd & Home)</button>`);
@@ -553,9 +608,8 @@
                 ctxEl.innerText = label ? `Lead runner traits: ${label}` : '';
                 updateStealOdds();
             } else { panel.style.display = 'none'; }
+            updateActionReminder();
         }
-
-        function setBatterTrait(category, value) {
             batterTraits[category] = value;
             const groups = {
                 power:   { ids: ['tp-minus','tp-norm','tp-plus','tp-pp'],   vals: ['P-','NORM','P+','P++'],  cls: 'active-trait-p' },
@@ -877,6 +931,7 @@
             } else if (adjRoll >= 10 && adjRoll <= 14) {
                 // Rolls 10–14: Single, runners advance 2
                 msgBox.innerText = pick(singleAdv2);
+                detailsBox.innerText = 'Runners advance two bases.';
                 advanceBasesOnHit("SINGLE", 2);
 
             } else if (adjRoll === 15) {
@@ -897,6 +952,7 @@
             } else if (adjRoll === 18) {
                 // Roll 18: Double, runners advance 3
                 msgBox.innerText = "DOUBLE — off the wall and rolling, runners advancing";
+                detailsBox.innerText = 'Runners advance three bases.';
                 advanceBasesOnHit("DOUBLE", 3);
 
             } else {
@@ -1004,12 +1060,25 @@
                 } else {
                     addOuts(1);
                     let detail = applyInfieldGrounder();
-                    // Suppress runner detail on third out; suppress DP on 2 outs
-                    if (outCount < 3) {
-                        if (outCount === 2 && detail.startsWith('DOUBLE PLAY')) runnerDetail = '';
-                        else runnerDetail = detail;
-                    }
                     renderBases();
+
+                    if (outCount >= 3) {
+                        // Third out — suppress runner detail
+                    } else if (detail.startsWith('TRIPLE PLAY')) {
+                        msgBox.innerText = "Lined into a TRIPLE PLAY!";
+                        runnerDetail = detail;
+                    } else if (detail.startsWith('DOUBLE PLAY')) {
+                        const dpContact = {
+                            3: ["Chopper to first, steps on the bag — DP! 3U","Tapper to first, no time to turn — DP! 3U"],
+                            4: ["Grounder to second, pivots and fires — DP! 4-6-3","Up the middle, turns two — DP! 4-6-3"],
+                            5: ["Shot to third, around the horn — DP! 5-4-3","Hot smash to third, they turn two — DP! 5-4-3"],
+                            6: ["In the hole, fires to second, relay to first — DP! 6-4-3","Backhander by the shortstop, turns the DP — 6-4-3"],
+                        };
+                        msgBox.innerText = pick(dpContact[ones] || dpContact[6]);
+                        runnerDetail = detail;
+                    } else {
+                        runnerDetail = detail;
+                    }
                 }
 
                 detailsBox.innerText = runnerDetail;
@@ -1051,7 +1120,7 @@
                     detail = 'FC — Batter out at first; 1st→2nd, 2nd→3rd, 3rd scores.';
                     bases = { 1: null, 2: r1, 3: r2 }; trackScore(1);
                 } else if (mss <= 69) {
-                    detail = 'FC — Runner out at first; batter safe at 1st; 2nd→3rd, 3rd scores.';
+                    detail = 'FC — Runner out at 2nd; batter safe at 1st; 2nd→3rd, 3rd scores.';
                     bases = { 1: batter, 2: null, 3: r2 }; trackScore(1);
                 } else {
                     detail = 'FC — Runner on 3rd out at home; batter to 1st, runners advance.';
@@ -1081,10 +1150,10 @@
                     }
                 } else if (mss <= 69) {
                     if (is3BorSS) {
-                        detail = 'FC — Runner on 1st out; batter to 1st; 3rd holds.';
+                        detail = 'FC — Runner out at 2nd; batter safe at 1st; 3rd holds.';
                         bases = { 1: batter, 2: null, 3: r3 };
                     } else {
-                        detail = 'FC — Runner on 1st out; batter to 1st; 3rd scores.';
+                        detail = 'FC — Runner out at 2nd; batter safe at 1st; 3rd scores.';
                         bases = { 1: batter, 2: null, 3: null }; trackScore(1);
                     }
                 } else {
@@ -1099,7 +1168,7 @@
                     detail = 'FC — Batter out; 1st→2nd, 2nd→3rd.';
                     bases = { 1: null, 2: r1, 3: r2 };
                 } else if (mss <= 69) {
-                    detail = 'FC — Runner on 1st out; batter to 1st; 2nd→3rd.';
+                    detail = 'FC — Runner out at 2nd; batter safe at 1st; 2nd→3rd.';
                     bases = { 1: batter, 2: null, 3: r2 };
                 } else {
                     if (mss > 100) {
@@ -1140,7 +1209,7 @@
                     detail = 'FC — Batter out; 1st→2nd.';
                     bases = { 1: null, 2: r1, 3: null };
                 } else if (mss <= 69) {
-                    detail = 'FC — Runner on 1st out; batter safe at 1st.';
+                    detail = 'FC — Runner out at 2nd; batter safe at 1st.';
                     bases[1] = batter;
                 } else {
                     detail = 'DOUBLE PLAY — Batter and runner on 1st both out.';
@@ -1203,7 +1272,7 @@
             let ctxEl = document.getElementById('bunt-runner-ctx');
             container.innerHTML = '';
             let anyRunner = bases[1] || bases[2] || bases[3];
-            if (!anyRunner || outCount >= 3) { panel.style.display = 'none'; return; }
+            if (!anyRunner || outCount >= 3) { panel.style.display = 'none'; updateActionReminder(); return; }
 
             let leadBase = bases[3] ? 3 : bases[2] ? 2 : 1;
             let labels = { 1: '1st', 2: '2nd', 3: '3rd' };
@@ -1219,9 +1288,8 @@
             container.innerHTML = `<button class="bunt-act-btn" onclick="resolveBunt(${leadBase})">${btnLabel}</button>`;
             panel.style.display = 'block';
             updateBuntOdds();
+            updateActionReminder();
         }
-
-        function setupBuntDieVisual() {
             clearDisplay();
             document.getElementById('hit-die-label').innerText = "BUNT DIE";
             document.getElementById('hit-die-label').style.color = "#3730a3";
