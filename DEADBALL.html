@@ -453,7 +453,5 @@
         function resolveBunt(leadBase) { setupBuntDieVisual(); let rawRoll = Math.floor(Math.random() * 6) + 1; let mod = (leadRunner().contact === 'C+') ? 1 : (leadRunner().contact === 'C-') ? -1 : 0; let finalRoll = rawRoll + mod; document.getElementById('die-hit').innerText = rawRoll; if (finalRoll <= 2) { bases[leadBase] = null; bases[1] = newRunner(); addOuts(1); } else { if (leadBase === 3) trackScore(1); else bases[leadBase + 1] = bases[leadBase]; bases[leadBase] = null; if (finalRoll <= 5) addOuts(1); else bases[1] = newRunner(); } renderBases(); }
         resetBatterTraits();
     </script>
-    </body>
-</html>
 </body>
 </html>
