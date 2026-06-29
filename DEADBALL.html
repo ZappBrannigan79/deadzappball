@@ -186,7 +186,7 @@
 
         /* Mobile steal/bunt reminder badge */
         #action-reminder {
-            display: none; /* shown only via JS on mobile */
+            display: none;
         }
         @media (max-width: 700px) {
             #action-reminder {
@@ -238,7 +238,6 @@
             h2 { margin: 0 0 4px 0; font-size: 16px; }
             hr { margin: 3px 0 !important; }
 
-            /* Default buttons */
             button {
                 font-size: 14px;
                 padding: 7px 11px;
@@ -247,7 +246,6 @@
             }
             .flex-row { gap: 6px; }
 
-            /* Pitcher die — compact */
             .row { margin: 3px 0; }
             .row button {
                 font-size: 12px;
@@ -255,7 +253,6 @@
                 min-height: 30px;
             }
 
-            /* Trait buttons — small and tight */
             .trait-btn {
                 font-size: 11px;
                 padding: 4px 6px;
@@ -266,14 +263,12 @@
             .trait-group { gap: 1px; font-size: 10px; }
             .trait-group span { margin-right: 1px; }
 
-            /* Play button */
             #play-btn {
                 font-size: 15px;
                 padding: 8px 0;
                 margin-top: 3px;
             }
 
-            /* Diamond — shrink slightly to save vertical space */
             .diamond-container {
                 width: 130px;
                 height: 130px;
@@ -285,26 +280,21 @@
             #base-3rd { top: 46px; left: 0px;  }
             #base-1st { top: 46px; left: 92px; }
 
-            /* Outs buttons */
             #out-cnt-1, #out-cnt-2, #out-cnt-3 {
                 font-size: 15px;
                 padding: 6px 16px;
             }
 
-            /* Score and end inning */
             .score-display { font-size: 12px; margin-top: 2px; }
             #clear-bases-btn { font-size: 12px; padding: 7px; margin-top: 3px; }
 
-            /* Action buttons */
             .action-btn {
                 font-size: 15px;
                 width: 80px;
                 padding: 9px 0;
             }
-            /* Resolve outcome section */
             .flex-row .action-btn { margin: 2px; }
 
-            /* Result + dice */
             #result-msg { font-size: 14px; margin-top: 2px; min-height: 20px; }
             #hit-details { font-size: 11px; margin-top: 2px; }
             .dice-container { height: 72px; gap: 8px; margin: 4px 0; }
@@ -314,12 +304,10 @@
             #hit-die-container { margin-top: 6px; min-height: 80px; }
             .match-alert { font-size: 12px; margin: 2px 0; min-height: 14px; }
 
-            /* Right panel steal/bunt */
             .steal-box, .bunt-box { width: 96%; margin-top: 6px; padding: 7px; }
             .steal-act-btn, .bunt-act-btn { font-size: 13px; padding: 8px; }
             .steal-mini-btn { font-size: 11px; padding: 5px 7px; min-height: 28px; }
 
-            /* Next batter */
             #next-btn { font-size: 15px; padding: 9px 0; margin-top: 6px; }
         }
     </style>
@@ -378,6 +366,8 @@
                             <button class="trait-btn" id="tc-plus"  onclick="setBatterTrait('contact','C+')">C+</button>
                         </div>
                     </div>
+                    <!-- FIX #4: Power die modifier display -->
+                    <div id="power-mod-display" style="font-size: 11px; color: #7c3aed; font-weight: bold; min-height: 14px; margin-top: 2px;"></div>
                 </div>
                 <button id="play-btn" class="faded" disabled onclick="playAtBat()">PLAY AT BAT</button>
             </div>
@@ -471,11 +461,12 @@
         let bHand = ''; 
         let tens = 0, ones = 0, pitch = 0, mss = 0;
 
-        // Runner objects: { speed, power, contact } or null
+        // Runner objects: { speed } or null — only speed matters for base running
         let bases = { 1: null, 2: null, 3: null };
         let inningRuns = 0;
         let outCount = 0;
         let stealCatcherTrait = 'NORM';
+        let stealRunnerTrait = 'NORM';
 
         // Current batter traits (reset each batter)
         let batterTraits = { power: 'NORM', speed: 'NORM', contact: 'NORM' };
@@ -483,17 +474,17 @@
         const dieSteps = [4, 8, 12, 20];
         const positionNames = { "1B": "first baseman (1B)", "2B": "second baseman (2B)", "3B": "third baseman (3B)", "SS": "shortstop (SS)", "LF": "left fielder (LF)", "CF": "center fielder (CF)", "RF": "right fielder (RF)" };
 
+        // FIX #5: newRunner only stores speed (only trait that affects base running)
         function newRunner() {
-            return { power: batterTraits.power, speed: batterTraits.speed, contact: batterTraits.contact };
+            return { speed: batterTraits.speed };
         }
 
+        // FIX #5: traitLabel only shows speed modifier (S+/S-), blank for NORM
         function traitLabel(runner) {
             if (!runner) return '';
-            let tags = [];
-            if (runner.power !== 'NORM') tags.push(runner.power);
-            if (runner.speed !== 'NORM') tags.push(runner.speed);
-            if (runner.contact !== 'NORM') tags.push(runner.contact);
-            return tags.join(' ');
+            if (runner.speed === 'S+') return 'S+';
+            if (runner.speed === 'S-') return 'S-';
+            return '';
         }
 
         function scrollToActions() {
@@ -506,19 +497,20 @@
             }
         }
 
+        // FIX #3: removed "tap to jump" from badge text
         function updateActionReminder() {
             let badge = document.getElementById('action-reminder');
             if (!badge) return;
             let stealVisible = document.getElementById('steal-panel').style.display !== 'none';
             let buntVisible  = document.getElementById('bunt-panel').style.display !== 'none';
             if (stealVisible && buntVisible) {
-                badge.innerText = '⚡ Steal or Bunt available — tap to jump';
+                badge.innerText = '⚡ Steal or Bunt available';
                 badge.style.display = 'block';
             } else if (stealVisible) {
-                badge.innerText = '🏃 Steal available — tap to jump';
+                badge.innerText = '🏃 Steal available';
                 badge.style.display = 'block';
             } else if (buntVisible) {
-                badge.innerText = '📦 Bunt available — tap to jump';
+                badge.innerText = '📦 Bunt available';
                 badge.style.display = 'block';
             } else {
                 badge.style.display = 'none';
@@ -526,7 +518,6 @@
         }
 
         function leadRunner() {
-            // Highest occupied base is the lead runner
             return bases[3] || bases[2] || bases[1] || null;
         }
 
@@ -549,8 +540,7 @@
         }
 
         function toggleBase(baseNum) {
-            // Manual toggle: put a generic runner on or remove
-            bases[baseNum] = bases[baseNum] ? null : { power:'NORM', speed:'NORM', contact:'NORM' };
+            bases[baseNum] = bases[baseNum] ? null : { speed: 'NORM' };
             renderBases();
         }
 
@@ -603,15 +593,27 @@
             if (options.length > 0) {
                 panel.style.display = 'block';
                 container.innerHTML = options.join('');
-                // Auto-read lead runner speed trait
                 let lr = leadRunner();
                 let spd = lr ? lr.speed : 'NORM';
                 stealRunnerTrait = spd;
                 let label = traitLabel(lr);
-                ctxEl.innerText = label ? `Lead runner traits: ${label}` : '';
+                ctxEl.innerText = label ? `Lead runner: ${label}` : '';
                 updateStealOdds();
             } else { panel.style.display = 'none'; }
             updateActionReminder();
+        }
+
+        // FIX #4: Power modifier display
+        function updatePowerModDisplay() {
+            let el = document.getElementById('power-mod-display');
+            if (!el) return;
+            const msgs = {
+                'P-':  'P− = −1 to hit die roll',
+                'NORM': '',
+                'P+':  'P+ = +1 to hit die roll',
+                'P++': 'P++ = +2 to hit die roll',
+            };
+            el.innerText = msgs[batterTraits.power] || '';
         }
 
         function setBatterTrait(category, value) {
@@ -627,6 +629,7 @@
                 btn.classList.remove('active-trait-p','active-trait-s','active-trait-c','active-trait-norm','illuminate-trait');
                 if (g.vals[i] === value) btn.classList.add(value === 'NORM' ? 'active-trait-norm' : g.cls);
             });
+            if (category === 'power') updatePowerModDisplay();
         }
 
         function resetBatterTraits() {
@@ -635,6 +638,7 @@
                 document.getElementById(id).classList.remove('active-trait-p','active-trait-s','active-trait-c','active-trait-norm','illuminate-trait');
             });
             ['tp-norm','ts-norm','tc-norm'].forEach(id => document.getElementById(id).classList.add('active-trait-norm'));
+            updatePowerModDisplay();
         }
 
         function setStealRunner(trait) {
@@ -653,19 +657,13 @@
         function updateStealOdds() {
             let el = document.getElementById('steal-odds-line');
             if (!el) return;
-            // Base thresholds (raw d8 roll needed): 2nd=4+, 3rd=5+, Home=9+(S+ only)
-            // Modifiers: D- adds +1 to roll (easier), D+ subtracts 1 (harder), S- subtracts 2 from roll (harder)
-            // Effective: safe if finalRoll > threshold (strictly), or == threshold if S+
-            // threshold for 2nd: 3, 3rd: 4, home: 8
             let catchMod = (stealCatcherTrait === 'D-') ? 1 : (stealCatcherTrait === 'D+') ? -1 : 0;
             let runMod   = (stealRunnerTrait === 'S-') ? -2 : 0;
             let totalMod = catchMod + runMod;
-            // Effective raw roll needed: rawRoll + totalMod > threshold => rawRoll > threshold - totalMod
-            // So safe on rawRoll >= (threshold - totalMod + 1), unless S+ where >= threshold - totalMod
             function safeOn(threshold) {
                 let needed = threshold - totalMod + 1;
                 if (stealRunnerTrait === 'S+') needed = threshold - totalMod;
-                return Math.min(Math.max(needed, 1), 9); // clamp; 9 = impossible on d8
+                return Math.min(Math.max(needed, 1), 9);
             }
             let s2 = safeOn(3), s3 = safeOn(4), sh = safeOn(8);
             function pct(n) { return n > 8 ? '0%' : n <= 1 ? '100%' : Math.round((9-n)/8*100)+'%'; }
@@ -677,13 +675,10 @@
             let el = document.getElementById('bunt-odds-line');
             if (!el) return;
             let lr = leadRunner();
-            let contact = lr ? lr.contact : 'NORM';
+            let contact = lr ? (batterTraits.contact || 'NORM') : 'NORM'; // use current batter's contact for bunt
             let mod = (contact === 'C+') ? 1 : (contact === 'C-') ? -1 : 0;
-            // d6: ≤2 = LR out/batter safe; 3 = split; 4-5 = LR adv/batter out; ≥6 = LR adv/batter safe (S+ single)
-            // With mod, effective roll = raw + mod
-            // "Both safe" (batter reaches) on raw+mod >= 6 => raw >= 6-mod
             let bothSafeOn = 6 - mod;
-            let lrAdvOn = 4 - mod; // LR advances on 3-5 effective => raw >= 3-mod
+            let lrAdvOn = 4 - mod;
             bothSafeOn = Math.min(Math.max(bothSafeOn, 1), 7);
             lrAdvOn    = Math.min(Math.max(lrAdvOn, 1), 7);
             function d6pct(n) { return n > 6 ? '0%' : n <= 1 ? '100%' : Math.round((7-n)/6*100)+'%'; }
@@ -719,7 +714,7 @@
             else if (targetBase === 4) isSafe = (finalRoll > 8 || (finalRoll === 8 && stealRunnerTrait === 'S+'));
 
             let msgBox = document.getElementById('result-msg');
-            let runner = bases[targetBase - 1]; // runner attempting the steal
+            let runner = bases[targetBase - 1];
             if (isSafe) {
                 msgBox.className = "msg-hit";
                 msgBox.innerText = `SAFE! Stole ${targetBase === 4 ? 'Home' : (targetBase === 2 ? '2nd' : '3rd')}`;
@@ -742,13 +737,11 @@
             let msgBox = document.getElementById('result-msg');
             if (finalRoll <= 3) {
                 msgBox.className = "msg-out"; msgBox.innerText = "OUT! Lead runner cut down.";
-                // Lead runner is out; trailing runner stays
                 if (type === '2nd_3rd') { bases[2] = null; }
                 else { bases[3] = null; }
                 addOuts(1);
             } else if (finalRoll <= 5) {
                 msgBox.className = "msg-out"; msgBox.innerText = "OUT! Trailing runner cut down.";
-                // Lead runner advances; trailing runner out
                 if (type === '2nd_3rd') { bases[3] = bases[2]; bases[2] = null; bases[1] = null; }
                 else { trackScore(1); bases[3] = null; bases[2] = null; }
                 addOuts(1);
@@ -763,22 +756,15 @@
         function advanceBasesOnWalk() {
             let runs = 0;
             let r1 = bases[1], r2 = bases[2], r3 = bases[3];
-            // Only forced advances: runners advance only if the base behind them is occupied
-            // (chain from 3rd back to 1st, then batter takes 1st)
             if (r1 && r2 && r3) {
-                // Bases loaded — everyone forced: 3rd scores, 2nd→3rd, 1st→2nd, batter→1st
                 runs = 1;
                 bases = { 1: newRunner(), 2: r1, 3: r2 };
             } else if (r1 && r2 && !r3) {
-                // 1st and 2nd — 2nd→3rd, 1st→2nd, batter→1st
                 bases = { 1: newRunner(), 2: r1, 3: r2 };
             } else if (r1 && !r2) {
-                // Runner on 1st only (3rd may or may not be occupied, but not forced)
-                // 1st→2nd, batter→1st; 3rd unaffected
                 bases[1] = newRunner();
                 bases[2] = r1;
             } else {
-                // No runner on 1st — batter takes 1st, nobody forced
                 bases[1] = newRunner();
             }
             renderBases(); trackScore(runs);
@@ -795,7 +781,7 @@
                 if (r3) { if (baseAdvancement >= 1) runs++; else bases[3] = r3; }
                 if (r2) { let dest = 2 + baseAdvancement; if (dest >= 4) runs++; else bases[dest] = r2; }
                 if (r1) { let dest = 1 + baseAdvancement; if (dest >= 4) runs++; else bases[dest] = r1; }
-                // Place batter as new runner with current traits
+                // FIX #2: always place batter as new runner on a hit
                 let batter = newRunner();
                 if (type === "SINGLE") bases[1] = batter;
                 else if (type === "DOUBLE") bases[2] = batter;
@@ -871,7 +857,6 @@
             ['hit-btn', 'out-btn', 'walk-btn'].forEach(id => { document.getElementById(id).classList.add('faded'); document.getElementById(id).disabled = true; });
             bHand = ''; ['L','R','S'].forEach(h => { document.getElementById('bHand'+h).classList.remove('active-b'); document.getElementById('bHand'+h).classList.add('illuminate'); });
             resetBatterTraits();
-            // Illuminate trait Norm buttons to draw attention
             ['tp-norm','ts-norm','tc-norm'].forEach(id => document.getElementById(id).classList.add('illuminate-trait'));
             updateMatchup();
         }
@@ -882,14 +867,12 @@
             document.getElementById('die-hit').innerText = hitRoll;
             document.getElementById('container-hit').style.display = 'block';
             let msgBox = document.getElementById('result-msg');
+            let detailsBox = document.getElementById('hit-details');
             msgBox.className = "msg-hit";
 
-            // Power trait shifts the raw roll up before looking up result
-            // P+: +1, P++: +2; Crit modifier (+1 lev, no DEF) applied per-result below
             let powerShift = (batterTraits.power === 'P+') ? 1 : (batterTraits.power === 'P++') ? 2 : (batterTraits.power === 'P-') ? -1 : 0;
             let adjRoll = hitRoll + powerShift;
 
-            // Flavor pools
             const singleShort = [
                 "SINGLE — bleeder through the left side",
                 "SINGLE — swinging bunt, beats it out",
@@ -901,75 +884,52 @@
                 "SINGLE — line drive to left, ball gets away",
                 "SINGLE — bloop to right, they're not stopping",
             ];
-            const tripleFlavor = [
-                "Into the corner, he's rounding third — 3B!",
-                "Off the wall, he never stops — 3B!",
-                "Splits the outfielders, digging for third — 3B!",
-            ];
-
-            // ── Modern Hit Table (d20) ────────────────────────────────────
-            // adjRoll accounts for P+/P++ shift.
-            // "Crit" = one level upgrade with no DEF roll (from table note).
 
             if (adjRoll <= 0) {
-                // Shouldn't happen on a raw d20 without very deep negative mods, but handle it
                 msgBox.innerText = pick(singleShort);
                 advanceBasesOnHit("SINGLE", 1);
 
             } else if (adjRoll === 1) {
-                // Roll 1: Single — with C+/S+ upgrade to Double (runs+2, no DEF); S++ upgrade to Triple no DEF
-                // In practice the table note says P+ adds +1 to shift, handled by adjRoll.
-                // At adjRoll=1 (raw roll=1 with no power, or roll=0 with P+), just a plain single.
                 msgBox.innerText = pick(singleShort);
                 advanceBasesOnHit("SINGLE", 1);
 
             } else if (adjRoll === 2) {
-                // Roll 2: Single — C+: Double adv 2 no DEF; S+: Triple no DEF
-                // Again handled by power shift pushing roll up. Plain single here.
                 msgBox.innerText = pick(singleShort);
                 advanceBasesOnHit("SINGLE", 1);
 
             } else if (adjRoll >= 3 && adjRoll <= 6) {
-                // Rolls 3–6: Single DEF (1B / 2B / 3B / SS)
-                const pos = {3:"1B", 4:"2B", 5:"3B", 6:"SS"}[adjRoll] || {3:"1B",4:"2B",5:"3B",6:"SS"}[Math.min(adjRoll,6)];
+                const pos = {3:"1B", 4:"2B", 5:"3B", 6:"SS"}[adjRoll] || "SS";
                 const dir = {"1B":"toward first","2B":"up the middle","3B":"down the line","SS":"in the hole"};
                 msgBox.innerText = `SINGLE — sharp grounder ${dir[pos]}, ${pos} must field it (DEF roll)`;
                 triggerDefenseRoll("SINGLE", pos); return;
 
             } else if (adjRoll >= 7 && adjRoll <= 9) {
-                // Rolls 7–9: Single (plain)
                 msgBox.innerText = pick(singleShort);
                 advanceBasesOnHit("SINGLE", 1);
 
             } else if (adjRoll >= 10 && adjRoll <= 14) {
-                // Rolls 10–14: Single, runners advance 2
                 msgBox.innerText = pick(singleAdv2);
                 detailsBox.innerText = 'Runners advance two bases.';
                 advanceBasesOnHit("SINGLE", 2);
 
             } else if (adjRoll === 15) {
-                // Roll 15: Double, DEF (LF)
                 msgBox.innerText = "DOUBLE — scorched down the left-field line (DEF roll: LF)";
                 triggerDefenseRoll("DOUBLE", "LF"); return;
 
             } else if (adjRoll === 16) {
-                // Roll 16: Double, DEF (CF)
                 msgBox.innerText = "DOUBLE — ripped into the gap (DEF roll: CF)";
                 triggerDefenseRoll("DOUBLE", "CF"); return;
 
             } else if (adjRoll === 17) {
-                // Roll 17: Double, DEF (RF)
                 msgBox.innerText = "DOUBLE — lasered to right-center (DEF roll: RF)";
                 triggerDefenseRoll("DOUBLE", "RF"); return;
 
             } else if (adjRoll === 18) {
-                // Roll 18: Double, runners advance 3
                 msgBox.innerText = "DOUBLE — off the wall and rolling, runners advancing";
                 detailsBox.innerText = 'Runners advance three bases.';
                 advanceBasesOnHit("DOUBLE", 3);
 
             } else {
-                // Roll ≥19: Home Run (table says ≥19 = HR; no triple on this table)
                 msgBox.innerText = "He got all of it — GONE! HR 🏠";
                 advanceBasesOnHit("HR", 4);
             }
@@ -1024,7 +984,6 @@
             msgBox.className = "msg-out";
             detailsBox.innerText = '';
 
-            // ── Flavor text pools ──────────────────────────────────────────
             const strikeoutFlavor = [
                 "Chases the breaking ball — K",
                 "Punched out looking — ꓘ",
@@ -1054,7 +1013,6 @@
             let noRunners = !b1 && !b2 && !b3;
             let runnerDetail = '';
 
-            // ── STRIKEOUT — no runner movement ────────────────────────────
             if (ones >= 0 && ones <= 2) {
                 msgBox.innerText = pick(strikeoutFlavor);
                 addOuts(1);
@@ -1062,7 +1020,6 @@
                 return;
             }
 
-            // ── INFIELD OUT (ones 3–6) ────────────────────────────────────
             if (ones >= 3 && ones <= 6) {
                 let flavor = isLineout ? pick(lineFlavor[ones]) : pick(groundFlavor[ones]);
                 msgBox.innerText = flavor;
@@ -1099,7 +1056,6 @@
                 return;
             }
 
-            // ── OUTFIELD OUT (ones 7–9) ───────────────────────────────────
             if (ones >= 7 && ones <= 9) {
                 let flavor = pick(flyFlavor[ones]);
                 msgBox.innerText = flavor;
@@ -1113,14 +1069,11 @@
                 return;
             }
 
-            // Fallback
             msgBox.innerText = "Routine out — fielded";
             addOuts(1);
             postResolutionLoop();
         }
 
-        // ── INFIELD GROUNDER BASE RUNNING TABLE ───────────────────────────
-        // NOTE: batter out already added by handleOut. Only addOuts for extra outs (DP, TP).
         function applyInfieldGrounder() {
             let r1 = bases[1], r2 = bases[2], r3 = bases[3];
             let b1 = !!r1, b2 = !!r2, b3 = !!r3;
@@ -1234,7 +1187,6 @@
             return '';
         }
 
-        // ── OUTFIELD FLY BASE RUNNING TABLE ──────────────────────────────
         function applyOutfieldFly() {
             let r1 = bases[1], r2 = bases[2], r3 = bases[3];
             let b1 = !!r1, b2 = !!r2, b3 = !!r3;
@@ -1292,10 +1244,8 @@
             let targetLabels = { 1: '2nd', 2: '3rd', 3: 'Home' };
 
             let lr = leadRunner();
-            let contact = lr ? lr.contact : 'NORM';
-            buntCatcherTrait = contact; // auto-apply lead runner contact trait
             let label = traitLabel(lr);
-            ctxEl.innerText = label ? `Lead runner traits: ${label}` : '';
+            ctxEl.innerText = label ? `Lead runner: ${label}` : '';
 
             let btnLabel = `Bunt (LR on ${labels[leadBase]} → ${targetLabels[leadBase]})`;
             container.innerHTML = `<button class="bunt-act-btn" onclick="resolveBunt(${leadBase})">${btnLabel}</button>`;
@@ -1312,52 +1262,116 @@
             document.getElementById('container-hit').style.display = 'block';
         }
 
+        // FIX #1: Bunt with multiple runners — failed bunt should advance trailing runners
+        // Logic: defense focuses on lead runner. Other runners advance one base regardless.
         function resolveBunt(leadBase) {
             setupBuntDieVisual();
             let rawRoll = Math.floor(Math.random() * 6) + 1;
-            let lr = leadRunner();
-            let contact = lr ? lr.contact : 'NORM';
+            let contact = batterTraits.contact;
             let mod = (contact === 'C+') ? 1 : (contact === 'C-') ? -1 : 0;
             let finalRoll = rawRoll + mod;
             document.getElementById('die-hit').innerText = rawRoll;
 
             let msgBox = document.getElementById('result-msg');
+            let detailsBox = document.getElementById('hit-details');
             let toLabel = ['','2nd','3rd','Home'][leadBase];
-            let lrRunner = bases[leadBase]; // the runner object
+            let lrRunner = bases[leadBase];
             let batter = newRunner();
 
+            // Snapshot all runners before clearing
+            let r1 = bases[1], r2 = bases[2], r3 = bases[3];
+
+            // Helper: advance all non-lead runners one base (they go on any bunt attempt)
+            function advanceTrailingRunners() {
+                // Advance runners on bases BELOW the lead runner
+                // They always try to advance; defense is focused on lead runner
+                if (leadBase === 3) {
+                    // Lead on 3rd → trailing runners on 1st and/or 2nd advance one base each
+                    if (r2) bases[3] = r2; // 2nd→3rd (but lead runner's outcome handled separately)
+                    if (r1) bases[2] = r1; // 1st→2nd
+                    // Note: bases[3] will be overwritten below by lead runner outcome
+                } else if (leadBase === 2) {
+                    // Lead on 2nd → trailing runner on 1st advances to 2nd
+                    if (r1) bases[2] = r1; // 1st→2nd (will be overwritten if lead goes to 3rd)
+                }
+                // leadBase === 1: no trailing runners possible
+            }
+
+            // Clear all runners first
+            bases = { 1: null, 2: null, 3: null };
+
             if (finalRoll <= 2) {
+                // LR out at target; batter safe at 1st; trailing runners still advance
                 msgBox.className = "msg-out";
-                msgBox.innerText = `BUNT: LR out at ${toLabel} — Batter safe at 1st (2-3)`;
-                bases[leadBase] = null;
+                msgBox.innerText = `BUNT: LR out at ${toLabel} — Batter safe at 1st`;
+                // Lead runner out; batter takes 1st; trailing runners advance
                 bases[1] = batter;
+                advanceTrailingRunners();
+                // Overwrite base[leadBase+1] since LR was thrown out there (don't place LR)
+                // Trailing runners that advanced to LR's target get bumped back — defense got LR
+                // Actually: LR is out at toLabel base. Trailing runners advance to bases behind.
+                // Re-clarify placement: just don't place LR at target.
                 addOuts(1);
+                let detail = buildTrailingDetail(leadBase, r1, r2, false);
+                detailsBox.innerText = detail;
+
             } else if (finalRoll === 3) {
                 if (leadBase === 3) {
+                    // LR out at Home; batter safe at 1st; r2→3rd, r1→2nd
                     msgBox.className = "msg-out";
-                    msgBox.innerText = `BUNT: LR out at Home — Batter safe at 1st (2U)`;
-                    bases[3] = null; bases[1] = batter; addOuts(1);
-                } else {
-                    msgBox.className = "msg-out";
-                    msgBox.innerText = `BUNT: LR advances to ${toLabel} — Batter out (2-3)`;
-                    bases[leadBase] = null;
-                    if (leadBase + 1 <= 3) bases[leadBase + 1] = lrRunner;
+                    msgBox.innerText = `BUNT: LR out at Home — Batter safe at 1st`;
+                    bases[1] = batter;
+                    if (r2) bases[3] = r2;
+                    if (r1) bases[2] = r1;
                     addOuts(1);
+                    detailsBox.innerText = buildTrailingDetail(leadBase, r1, r2, false);
+                } else {
+                    // LR advances; batter out; trailing runners advance
+                    msgBox.className = "msg-out";
+                    msgBox.innerText = `BUNT: LR advances to ${toLabel} — Batter out`;
+                    if (leadBase + 1 <= 3) bases[leadBase + 1] = lrRunner;
+                    advanceTrailingRunners();
+                    // Make sure LR's new base isn't overwritten by trailing runner
+                    if (leadBase === 2 && r1) bases[2] = r1; // r1→2nd is fine, LR went to 3rd
+                    if (leadBase === 1 && r1 === lrRunner) {} // only one runner anyway
+                    addOuts(1);
+                    detailsBox.innerText = buildTrailingDetail(leadBase, r1, r2, true);
                 }
+
             } else if (finalRoll <= 5) {
+                // LR advances; batter out; trailing runners advance
                 msgBox.className = "msg-out";
-                msgBox.innerText = `BUNT: LR advances to ${toLabel} — Batter out (2-3)`;
-                bases[leadBase] = null;
-                if (leadBase === 3) { trackScore(1); } else bases[leadBase + 1] = lrRunner;
+                msgBox.innerText = `BUNT: LR advances to ${toLabel} — Batter out`;
+                if (leadBase === 3) { trackScore(1); }
+                else { bases[leadBase + 1] = lrRunner; }
+                advanceTrailingRunners();
                 addOuts(1);
+                detailsBox.innerText = buildTrailingDetail(leadBase, r1, r2, true);
+
             } else {
+                // Both safe; trailing runners advance
                 msgBox.className = "msg-hit";
-                msgBox.innerText = `BUNT: LR advances to ${toLabel} — Batter safe at 1st (S+: Single/DEF 3B)`;
-                bases[leadBase] = null;
-                if (leadBase === 3) { trackScore(1); } else bases[leadBase + 1] = lrRunner;
+                msgBox.innerText = `BUNT: LR advances to ${toLabel} — Batter safe at 1st`;
+                if (leadBase === 3) { trackScore(1); }
+                else { bases[leadBase + 1] = lrRunner; }
                 bases[1] = batter;
+                advanceTrailingRunners();
+                detailsBox.innerText = buildTrailingDetail(leadBase, r1, r2, true);
             }
+
             renderBases();
+        }
+
+        // Describe what the trailing runners did
+        function buildTrailingDetail(leadBase, r1, r2, lrAdvanced) {
+            let parts = [];
+            if (leadBase === 3) {
+                if (r2) parts.push('2nd→3rd');
+                if (r1) parts.push('1st→2nd');
+            } else if (leadBase === 2) {
+                if (r1) parts.push('1st→2nd');
+            }
+            return parts.length ? parts.join('; ') + ' on the play.' : '';
         }
 
         // Initialize trait buttons on load
