@@ -185,34 +185,6 @@
         .trait-btn.active-trait-c  { background: #059669; color: white; border-color: #047857; }
         .trait-btn.active-trait-norm { background: #9ca3af; color: white; border-color: #6b7280; }
 
-        /* Mobile steal/bunt reminder badge */
-        #action-reminder {
-            display: none;
-        }
-        @media (max-width: 700px) {
-            #action-reminder {
-                display: none;
-                background: #137333;
-                color: white;
-                font-size: 13px;
-                font-weight: bold;
-                padding: 8px 14px;
-                border-radius: 20px;
-                text-align: center;
-                cursor: pointer;
-                margin: 0 auto 6px auto;
-                width: fit-content;
-                animation: reminder-pulse 1.2s infinite alternate;
-                user-select: none;
-                -webkit-user-select: none;
-                -webkit-touch-callout: none;
-            }
-            @keyframes reminder-pulse {
-                from { box-shadow: 0 0 4px rgba(19,115,51,0.4); opacity: 0.85; }
-                to   { box-shadow: 0 0 14px rgba(19,115,51,0.9); opacity: 1; }
-            }
-        }
-
         /* Read-only runner context in steal/bunt panels */
         .runner-ctx { font-size: 11px; color: #555; font-style: italic; margin-bottom: 3px; }
         /* ── MOBILE RESPONSIVE ─────────────────────────────────────────── */
@@ -270,16 +242,39 @@
                 margin-top: 3px;
             }
 
+            .diamond-wrapper {
+                gap: 4px;
+            }
             .diamond-container {
                 width: 130px;
                 height: 130px;
-                margin: 2px auto;
+                margin: 2px 6px;
             }
             .base { width: 38px; height: 38px; }
             .base-inner { font-size: 9px; max-width: 32px; }
             #base-2nd { top: 0px;  left: 46px; }
             #base-3rd { top: 46px; left: 0px;  }
             #base-1st { top: 46px; left: 92px; }
+            .steal-col {
+                margin-right: 4px;
+            }
+            .bunt-col {
+                margin-left: 4px;
+            }
+            .quick-steal-btn {
+                font-size: 9px;
+                padding: 4px 5px;
+                width: 56px;
+            }
+            .quick-bunt-btn {
+                font-size: 10px;
+                padding: 4px 5px;
+                width: 44px;
+            }
+            .quick-confirm-btn {
+                font-size: 10px;
+                padding: 4px 0;
+            }
 
             #out-cnt-1, #out-cnt-2, #out-cnt-3 {
                 font-size: 15px;
@@ -327,20 +322,22 @@
         }
         .stamp-text {
             font-family: 'Arial Black', 'Impact', sans-serif;
-            font-size: 52px;
+            font-size: 46px;
             font-weight: 900;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
             text-transform: uppercase;
-            padding: 8px 18px;
+            padding: 10px 22px;
             border: 6px solid;
             border-radius: 6px;
             transform: rotate(-12deg);
             opacity: 0;
             animation: stamp-in 0.25s cubic-bezier(0.2, 0.8, 0.3, 1.2) forwards;
             text-shadow: 2px 2px 0 rgba(0,0,0,0.15);
-            white-space: nowrap;
-            max-width: 90%;
+            white-space: normal;
+            max-width: 78%;
+            width: max-content;
             text-align: center;
+            line-height: 1.15;
             transition: opacity 0.5s ease;
         }
         .stamp-text.fading {
@@ -356,8 +353,128 @@
             80%  { transform: rotate(-12deg) scale(1.03); }
             100% { opacity: 1; transform: rotate(-12deg) scale(1); }
         }
+        .stamp-sub {
+            font-family: 'Arial Black', 'Impact', sans-serif;
+            font-size: 18px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 4px 12px;
+            border: 3px solid #6f42c1;
+            border-radius: 5px;
+            color: #6f42c1;
+            background: rgba(237,233,254,0.90);
+            transform: rotate(-12deg);
+            opacity: 0;
+            animation: stamp-in 0.3s cubic-bezier(0.2, 0.8, 0.3, 1.2) 0.15s forwards;
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.1);
+            white-space: nowrap;
+            transition: opacity 0.5s ease;
+        }
+        .stamp-sub.fading {
+            opacity: 0 !important;
+            animation: none;
+        }
         @media (max-width: 700px) {
-            .stamp-text { font-size: 36px; border-width: 4px; letter-spacing: 2px; }
+            .stamp-text { font-size: 30px; border-width: 4px; letter-spacing: 1px; max-width: 85%; padding: 8px 14px; }
+            .stamp-sub  { font-size: 13px; border-width: 2px; }
+        }
+
+        /* ── QUICK ACTION BUTTONS (steal/bunt around diamond) ─────────── */
+        .diamond-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            margin: 2px auto;
+        }
+        .steal-col {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            align-items: flex-end;
+        }
+        .bunt-col {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .quick-steal-btn {
+            font-size: 11px;
+            font-weight: bold;
+            padding: 5px 7px;
+            border-radius: 5px;
+            border: 2px solid #ccc;
+            background: #f4f4f6;
+            color: #aaa;
+            cursor: not-allowed;
+            width: 72px;
+            text-align: center;
+            transition: background 0.15s, color 0.15s, border-color 0.15s;
+            line-height: 1.2;
+        }
+        .quick-steal-btn.available {
+            background: #e0f7fa;
+            color: #0891b2;
+            border-color: #0891b2;
+            cursor: pointer;
+            animation: steal-available 1.4s infinite alternate;
+        }
+        .quick-steal-btn.selected {
+            background: #0891b2;
+            color: white;
+            border-color: #0e7490;
+            animation: none;
+        }
+        @keyframes steal-available {
+            from { box-shadow: 0 0 2px rgba(8,145,178,0.2); }
+            to   { box-shadow: 0 0 8px rgba(8,145,178,0.7); }
+        }
+        .quick-bunt-btn {
+            font-size: 11px;
+            font-weight: bold;
+            padding: 5px 7px;
+            border-radius: 5px;
+            border: 2px solid #ccc;
+            background: #f4f4f6;
+            color: #aaa;
+            cursor: not-allowed;
+            width: 56px;
+            text-align: center;
+            transition: background 0.15s, color 0.15s, border-color 0.15s;
+        }
+        .quick-bunt-btn.available {
+            background: #ede9fe;
+            color: #6f42c1;
+            border-color: #6f42c1;
+            cursor: pointer;
+            animation: bunt-available 1.4s infinite alternate;
+        }
+        @keyframes bunt-available {
+            from { box-shadow: 0 0 2px rgba(111,66,193,0.2); }
+            to   { box-shadow: 0 0 8px rgba(111,66,193,0.7); }
+        }
+        .quick-confirm-btn {
+            font-size: 12px;
+            font-weight: bold;
+            padding: 5px 0;
+            border-radius: 5px;
+            border: 2px solid;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 3px;
+            display: none;
+        }
+        .quick-confirm-steal {
+            background: #0891b2;
+            color: white;
+            border-color: #0e7490;
+        }
+        .quick-confirm-bunt {
+            background: #6f42c1;
+            color: white;
+            border-color: #5a32a3;
         }
     </style>
 </head>
@@ -365,7 +482,7 @@
 
     <div class="app-container">
         <div class="left-panel">
-            <div id="result-stamp"><span id="stamp-text" class="stamp-text"></span></div>
+            <div id="result-stamp" style="flex-direction:column; gap:6px;"><span id="stamp-text" class="stamp-text"></span><span id="stamp-sub" class="stamp-sub" style="display:none;"></span></div>
             <div>
                 <div class="flex-row">
                     <div>
@@ -430,11 +547,23 @@
                     <button id="out-cnt-2" onclick="setOutManual(2)">2</button>
                     <button id="out-cnt-3" onclick="setOutManual(3)">3</button>
                 </div>
-                <div class="diamond-container">
-                    <div id="base-2nd" class="base" onclick="toggleBase(2)"><span id="rt-2nd" class="base-inner"></span></div>
-                    <div id="base-3rd" class="base" onclick="toggleBase(3)"><span id="rt-3rd" class="base-inner"></span></div>
-                    <div id="base-1st" class="base" onclick="toggleBase(1)"><span id="rt-1st" class="base-inner"></span></div>
+                <div class="diamond-wrapper">
+                    <div class="steal-col">
+                        <button id="qs-2nd" class="quick-steal-btn" onclick="quickStealToggle(2)">STEAL<br>2ND</button>
+                        <button id="qs-3rd" class="quick-steal-btn" onclick="quickStealToggle(3)">STEAL<br>3RD</button>
+                        <button id="qs-home" class="quick-steal-btn" onclick="quickStealToggle(4)">STEAL<br>HOME</button>
+                        <button id="qs-confirm" class="quick-confirm-btn quick-confirm-steal" onclick="quickStealConfirm()">▶ STEAL</button>
+                    </div>
+                    <div class="diamond-container" style="margin:0;">
+                        <div id="base-2nd" class="base" onclick="toggleBase(2)"><span id="rt-2nd" class="base-inner"></span></div>
+                        <div id="base-3rd" class="base" onclick="toggleBase(3)"><span id="rt-3rd" class="base-inner"></span></div>
+                        <div id="base-1st" class="base" onclick="toggleBase(1)"><span id="rt-1st" class="base-inner"></span></div>
+                    </div>
+                    <div class="bunt-col">
+                        <button id="qb-btn" class="quick-bunt-btn" onclick="quickBunt()">BUNT</button>
+                    </div>
                 </div>
+
                 <div class="score-display">Inning Runs: <span id="inning-score">0</span></div>
                 <button id="clear-bases-btn" onclick="clearBases()">END INNING (RESET FIELD)</button>
             </div>
@@ -452,7 +581,6 @@
         </div>
         
         <div class="right-panel">
-            <div id="action-reminder" onclick="scrollToActions()"></div>
             <div class="dice-container">
                 <div class="die-wrapper">
                     <svg class="die-svg" viewBox="0 0 100 100"><polygon class="fill-blue outer-edge" points="50,5 95,50 50,95 5,50"/><line x1="50" y1="5" x2="50" y2="95"/><line x1="5" y1="50" x2="95" y2="50"/></svg>
@@ -487,22 +615,6 @@
                     </div>
                 </div>
             </div>
-            <div id="steal-panel" class="steal-box" style="display: none;">
-                <div class="section-title" style="margin-bottom:2px;">🏃 Base Stealing</div>
-                <div id="steal-odds-line" style="font-size: 11px; color: #666; margin-bottom: 2px;"></div>
-                <div id="steal-runner-ctx" class="runner-ctx"></div>
-                <div style="display: flex; justify-content: space-around; font-size: 12px; margin-bottom: 4px;">
-                    <div><span>Catcher:</span><button id="trait-c-norm" class="steal-mini-btn active-steal-trait" onclick="setStealCatcher('NORM')">Norm</button><button id="trait-c-minus" class="steal-mini-btn" onclick="setStealCatcher('D-')">D-</button><button id="trait-c-plus" class="steal-mini-btn" onclick="setStealCatcher('D+')">D+</button></div>
-                </div>
-                <div id="steal-actions-container"></div>
-            </div>
-            <div id="bunt-panel" class="bunt-box" style="display: none;">
-                <div class="section-title" style="margin-bottom:2px;">📦 Bunt</div>
-                <div id="bunt-odds-line" style="font-size: 11px; color: #666; margin-bottom: 2px;"></div>
-                <div id="bunt-runner-ctx" class="runner-ctx"></div>
-                <div style="font-size: 11px; color: #555; margin-bottom: 4px;">Lead runner advances if successful. Roll d6.</div>
-                <div id="bunt-actions-container"></div>
-            </div>
         </div>
     </div>
 
@@ -516,7 +628,6 @@
         let bases = { 1: null, 2: null, 3: null };
         let inningRuns = 0;
         let outCount = 0;
-        let stealCatcherTrait = 'NORM';
         let stealRunnerTrait = 'NORM';
 
         // Current batter traits (reset each batter)
@@ -538,36 +649,6 @@
             return '';
         }
 
-        function scrollToActions() {
-            let target = document.getElementById('steal-panel');
-            if (target && target.style.display !== 'none') {
-                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            } else {
-                let bunt = document.getElementById('bunt-panel');
-                if (bunt) bunt.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }
-
-        // FIX #3: removed "tap to jump" from badge text
-        function updateActionReminder() {
-            let badge = document.getElementById('action-reminder');
-            if (!badge) return;
-            let stealVisible = document.getElementById('steal-panel').style.display !== 'none';
-            let buntVisible  = document.getElementById('bunt-panel').style.display !== 'none';
-            if (stealVisible && buntVisible) {
-                badge.innerText = '⚡ Steal or Bunt available';
-                badge.style.display = 'block';
-            } else if (stealVisible) {
-                badge.innerText = '🏃 Steal available';
-                badge.style.display = 'block';
-            } else if (buntVisible) {
-                badge.innerText = '📦 Bunt available';
-                badge.style.display = 'block';
-            } else {
-                badge.style.display = 'none';
-            }
-        }
-
         function leadRunner() {
             return bases[3] || bases[2] || bases[1] || null;
         }
@@ -586,8 +667,7 @@
                     rt.innerText = '';
                 }
             }
-            updateStealPanelVisibility();
-            updateBuntPanelVisibility();
+            updateQuickActionButtons();
         }
 
         function toggleBase(baseNum) {
@@ -610,8 +690,7 @@
             let resetBtn = document.getElementById('clear-bases-btn');
             if (outCount >= 3) resetBtn.classList.add('illuminate-reset');
             else resetBtn.classList.remove('illuminate-reset');
-            updateStealPanelVisibility();
-            updateBuntPanelVisibility();
+            updateQuickActionButtons();
         }
 
         function clearBases() {
@@ -627,31 +706,6 @@
                 inningRuns += runs;
                 document.getElementById('inning-score').innerText = inningRuns;
             }
-        }
-
-        function updateStealPanelVisibility() {
-            let panel = document.getElementById('steal-panel');
-            let container = document.getElementById('steal-actions-container');
-            let ctxEl = document.getElementById('steal-runner-ctx');
-            container.innerHTML = '';
-            if (outCount >= 3) { panel.style.display = 'none'; updateActionReminder(); return; }
-            let options = [];
-            if (bases[1] && bases[2] && !bases[3]) options.push(`<button class="steal-act-btn" onclick="resolveDoubleSteal('2nd_3rd')">Double Steal (2nd & 3rd)</button>`);
-            else if (!bases[1] && bases[2] && bases[3]) options.push(`<button class="steal-act-btn" onclick="resolveDoubleSteal('3rd_Home')">Double Steal (3rd & Home)</button>`);
-            if (bases[1] && !bases[2]) options.push(`<button class="steal-act-btn" onclick="resolveSingleSteal(2)">Steal 2nd Base</button>`);
-            if (bases[2] && !bases[3]) options.push(`<button class="steal-act-btn" onclick="resolveSingleSteal(3)">Steal 3rd Base</button>`);
-            if (bases[3]) options.push(`<button class="steal-act-btn" onclick="resolveSingleSteal(4)">Steal Home Plate</button>`);
-            if (options.length > 0) {
-                panel.style.display = 'block';
-                container.innerHTML = options.join('');
-                let lr = leadRunner();
-                let spd = lr ? lr.speed : 'NORM';
-                stealRunnerTrait = spd;
-                let label = traitLabel(lr);
-                ctxEl.innerText = label ? `Lead runner: ${label}` : '';
-                updateStealOdds();
-            } else { panel.style.display = 'none'; }
-            updateActionReminder();
         }
 
         // FIX #4: Power modifier display
@@ -697,20 +751,11 @@
             updateStealOdds();
         }
 
-        function setStealCatcher(trait) {
-            stealCatcherTrait = trait;
-            ['norm', 'plus', 'minus'].forEach(t => document.getElementById('trait-c-' + t).classList.remove('active-steal-trait'));
-            let sub = (trait === 'NORM') ? 'norm' : (trait === 'D+') ? 'plus' : 'minus';
-            document.getElementById('trait-c-' + sub).classList.add('active-steal-trait');
-            updateStealOdds();
-        }
-
         function updateStealOdds() {
             let el = document.getElementById('steal-odds-line');
             if (!el) return;
-            let catchMod = (stealCatcherTrait === 'D-') ? 1 : (stealCatcherTrait === 'D+') ? -1 : 0;
             let runMod   = (stealRunnerTrait === 'S-') ? -2 : 0;
-            let totalMod = catchMod + runMod;
+            let totalMod = runMod;
             function safeOn(threshold) {
                 let needed = threshold - totalMod + 1;
                 if (stealRunnerTrait === 'S+') needed = threshold - totalMod;
@@ -754,8 +799,6 @@
             setupStealDieVisual();
             let rawRoll = Math.floor(Math.random() * 8) + 1;
             let mod = 0;
-            if (stealCatcherTrait === 'D-') mod += 1;
-            if (stealCatcherTrait === 'D+') mod -= 1;
             if (stealRunnerTrait === 'S-') mod -= 2;
             let finalRoll = rawRoll + mod;
             document.getElementById('die-hit').innerText = rawRoll;
@@ -769,11 +812,13 @@
             if (isSafe) {
                 msgBox.className = "msg-hit";
                 msgBox.innerText = `SAFE! Stole ${targetBase === 4 ? 'Home' : (targetBase === 2 ? '2nd' : '3rd')}`;
+                showStamp("SUCCESSFUL STEAL", "hit");
                 bases[targetBase - 1] = null;
                 if (targetBase === 4) { trackScore(1); } else { bases[targetBase] = runner; }
             } else {
                 msgBox.className = "msg-out";
                 msgBox.innerText = `OUT! Caught stealing.`;
+                showStamp("CAUGHT STEALING", "out");
                 bases[targetBase - 1] = null; addOuts(1);
             }
             renderBases();
@@ -788,16 +833,19 @@
             let msgBox = document.getElementById('result-msg');
             if (finalRoll <= 3) {
                 msgBox.className = "msg-out"; msgBox.innerText = "OUT! Lead runner cut down.";
+                showStamp("CAUGHT STEALING", "out");
                 if (type === '2nd_3rd') { bases[2] = null; }
                 else { bases[3] = null; }
                 addOuts(1);
             } else if (finalRoll <= 5) {
                 msgBox.className = "msg-out"; msgBox.innerText = "OUT! Trailing runner cut down.";
+                showStamp("CAUGHT STEALING", "out");
                 if (type === '2nd_3rd') { bases[3] = bases[2]; bases[2] = null; bases[1] = null; }
                 else { trackScore(1); bases[3] = null; bases[2] = null; }
                 addOuts(1);
             } else {
                 msgBox.className = "msg-hit"; msgBox.innerText = "SUCCESS! Both runners safe.";
+                showStamp("SUCCESSFUL STEAL", "hit");
                 if (type === '2nd_3rd') { bases[3] = bases[2]; bases[2] = bases[1]; bases[1] = null; }
                 else { trackScore(1); bases[2] = bases[1] || bases[2]; bases[1] = null; bases[3] = null; }
             }
@@ -949,11 +997,11 @@
             ];
 
             if (adjRoll <= 0) {
-                msgBox.innerText = pick(singleShort); showStamp("SINGLE","hit");
+                let _s0=snapBases(); msgBox.innerText = pick(singleShort); showStamp("SINGLE","hit",runnerSub(_s0,1));
                 advanceBasesOnHit("SINGLE", 1);
 
             } else if (adjRoll === 1) {
-                msgBox.innerText = pick(singleShort); showStamp("SINGLE","hit");
+                let _s1=snapBases(); msgBox.innerText = pick(singleShort); showStamp("SINGLE","hit",runnerSub(_s1,1));
                 advanceBasesOnHit("SINGLE", 1);
 
             } else if (adjRoll === 2) {
@@ -964,31 +1012,31 @@
                 const pos = {3:"1B", 4:"2B", 5:"3B", 6:"SS"}[adjRoll] || "SS";
                 const dir = {"1B":"toward first","2B":"up the middle","3B":"down the line","SS":"in the hole"};
                 msgBox.innerText = `SINGLE — sharp grounder ${dir[pos]}, ${pos} must field it (DEF roll)`;
-                triggerDefenseRoll("SINGLE", pos); return;
+                let _def1=snapBases(); triggerDefenseRoll("SINGLE", pos, _def1); return;
 
             } else if (adjRoll >= 7 && adjRoll <= 9) {
-                msgBox.innerText = pick(singleShort); showStamp("SINGLE","hit");
+                let _s7=snapBases(); msgBox.innerText = pick(singleShort); showStamp("SINGLE","hit",runnerSub(_s7,1));
                 advanceBasesOnHit("SINGLE", 1);
 
             } else if (adjRoll >= 10 && adjRoll <= 14) {
-                msgBox.innerText = pick(singleAdv2); showStamp("SINGLE","hit");
+                let _sa2=snapBases(); msgBox.innerText = pick(singleAdv2); showStamp("SINGLE","hit",runnerSub(_sa2,2));
                 detailsBox.innerText = 'Runners advance two bases.';
                 advanceBasesOnHit("SINGLE", 2);
 
             } else if (adjRoll === 15) {
                 msgBox.innerText = "DOUBLE — scorched down the left-field line (DEF roll: LF)";
-                triggerDefenseRoll("DOUBLE", "LF"); return;
+                let _defLF=snapBases(); triggerDefenseRoll("DOUBLE", "LF", _defLF); return;
 
             } else if (adjRoll === 16) {
                 msgBox.innerText = "DOUBLE — ripped into the gap (DEF roll: CF)";
-                triggerDefenseRoll("DOUBLE", "CF"); return;
+                let _defCF=snapBases(); triggerDefenseRoll("DOUBLE", "CF", _defCF); return;
 
             } else if (adjRoll === 17) {
                 msgBox.innerText = "DOUBLE — lasered to right-center (DEF roll: RF)";
-                triggerDefenseRoll("DOUBLE", "RF"); return;
+                let _defRF=snapBases(); triggerDefenseRoll("DOUBLE", "RF", _defRF); return;
 
             } else if (adjRoll === 18) {
-                msgBox.innerText = "DOUBLE — off the wall and rolling, runners advancing"; showStamp("DOUBLE","hit");
+                let _dw=snapBases(); msgBox.innerText = "DOUBLE — off the wall and rolling, runners advancing"; showStamp("DOUBLE","hit",runnerSub(_dw,3));
                 detailsBox.innerText = 'Runners advance three bases.';
                 advanceBasesOnHit("DOUBLE", 3);
 
@@ -999,7 +1047,7 @@
             postResolutionLoop();
         }
 
-        function triggerDefenseRoll(hitType, pos) {
+        function triggerDefenseRoll(hitType, pos, snap) {
             let defRoll = Math.floor(Math.random() * 12) + 1;
             document.getElementById('die-def').innerText = defRoll;
             document.getElementById('container-def').style.display = 'block';
@@ -1007,29 +1055,29 @@
             let detailsBox = document.getElementById('hit-details');
             if (defRoll === 12) {
                 const grabs = ["Incredible diving stop — OUT (robbed!)","Reaches back and hauls it in — OUT (spectacular)","Full extension, takes one away — OUT"];
-                msgBox.innerText = grabs[Math.floor(Math.random()*grabs.length)]; showStamp("OUT","out");
+                msgBox.innerText = grabs[Math.floor(Math.random()*grabs.length)]; showStamp("OUT","out","HIT ROBBED!");
                 msgBox.className = "msg-out"; addOuts(1);
             } else {
                 let held = (defRoll >= 3 && defRoll <= 9);
                 if (hitType === "DOUBLE") {
                     const doubleContact = { "LF": "down the left-field line", "CF": "into the gap", "RF": "to right-center" };
                     if (held) {
-                        msgBox.innerText = `DOUBLE — ${doubleContact[pos] || 'to the outfield'}, ${pos} cuts it off`; showStamp("DOUBLE","hit");
+                        msgBox.innerText = `DOUBLE — ${doubleContact[pos] || 'to the outfield'}, ${pos} cuts it off`; showStamp("DOUBLE","hit",runnerSub(snap,2));
                         detailsBox.innerText = 'Batter held to 2nd; runners advance 2.';
                         advanceBasesOnHit("DOUBLE", 2);
                     } else {
-                        msgBox.innerText = `DOUBLE — ${doubleContact[pos] || 'to the outfield'}, gets past ${pos}`; showStamp("DOUBLE","hit");
+                        msgBox.innerText = `DOUBLE — ${doubleContact[pos] || 'to the outfield'}, gets past ${pos}`; showStamp("DOUBLE","hit",runnerSub(snap,3));
                         detailsBox.innerText = 'Ball rolls to the wall; runners advance 3.';
                         advanceBasesOnHit("DOUBLE", 3);
                     }
                 } else {
                     const singleContact = { "1B": "toward first", "2B": "up the middle", "3B": "down the line", "SS": "in the hole" };
                     if (held) {
-                        msgBox.innerText = `SINGLE — grounder ${singleContact[pos] || 'to the infield'}, ${pos} fields it cleanly`; showStamp("SINGLE","hit");
+                        msgBox.innerText = `SINGLE — grounder ${singleContact[pos] || 'to the infield'}, ${pos} fields it cleanly`; showStamp("SINGLE","hit",runnerSub(snap,1));
                         detailsBox.innerText = 'Runners hold on the play.';
                         advanceBasesOnHit("SINGLE", 1);
                     } else {
-                        msgBox.innerText = `SINGLE — grounder ${singleContact[pos] || 'to the infield'}, ${pos} bobbles it`; showStamp("SINGLE","hit");
+                        msgBox.innerText = `SINGLE — grounder ${singleContact[pos] || 'to the infield'}, ${pos} bobbles it`; showStamp("SINGLE","hit",runnerSub(snap,2));
                         detailsBox.innerText = 'Error on the play; runners take an extra base.';
                         advanceBasesOnHit("SINGLE", 2);
                     }
@@ -1087,6 +1135,7 @@
                 let flavor = isLineout ? pick(lineFlavor[ones]) : pick(groundFlavor[ones]);
                 msgBox.innerText = flavor;
 
+                let _outSnap = snapBases();
                 if (isLineout || noRunners) {
                     if (isLineout && !noRunners) runnerDetail = 'Runners hold — no advancement on a liner.';
                     addOuts(1);
@@ -1115,20 +1164,29 @@
                 }
 
                 detailsBox.innerText = runnerDetail;
-                if (msgBox.innerText.includes('TRIPLE PLAY')) { showStamp('TRIPLE PLAY','out'); } else if (msgBox.innerText.includes('DOUBLE PLAY') || (runnerDetail && runnerDetail.startsWith('DOUBLE PLAY'))) { showStamp('DOUBLE PLAY','out'); } else { showStamp('OUT','out'); }
+                if (msgBox.innerText.includes('TRIPLE PLAY')) { showStamp('TRIPLE PLAY','out'); } else if (msgBox.innerText.includes('DOUBLE PLAY') || (runnerDetail && runnerDetail.startsWith('DOUBLE PLAY'))) { showStamp('DOUBLE PLAY','out'); } else { (() => {
+                    let _oc = (_outSnap.b1?1:0)+(_outSnap.b2?1:0)+(_outSnap.b3?1:0);
+                    let _moved = _oc > 0 && runnerDetail && !runnerDetail.includes('hold') && !runnerDetail.includes('holds');
+                    let _sub = _moved ? (_oc === 1 ? 'RUNNER ADVANCES' : 'RUNNERS ADVANCE') : null;
+                    showStamp('OUT','out',_sub);
+                })(); }
                 postResolutionLoop();
                 return;
             }
 
             if (ones >= 7 && ones <= 9) {
                 let flavor = pick(flyFlavor[ones]);
+                let _flySnap = snapBases();
                 msgBox.innerText = flavor;
                 addOuts(1);
                 if (!noRunners && outCount < 3) {
                     runnerDetail = applyOutfieldFly();
                     renderBases();
                 }
-                detailsBox.innerText = runnerDetail; showStamp("OUT","out");
+                let _flyCount = (_flySnap.b1?1:0)+(_flySnap.b2?1:0)+(_flySnap.b3?1:0);
+                let _flySub = (_flyCount > 0 && runnerDetail && (runnerDetail.includes('scores') || runnerDetail.includes('→')))
+                    ? (_flyCount === 1 ? 'RUNNER ADVANCES' : 'RUNNERS ADVANCE') : null;
+                detailsBox.innerText = runnerDetail; showStamp("OUT","out",_flySub);
                 postResolutionLoop();
                 return;
             }
@@ -1295,29 +1353,6 @@
 
         // ── BUNT ────────────────────────────────────────────────────────────
 
-        function updateBuntPanelVisibility() {
-            let panel = document.getElementById('bunt-panel');
-            let container = document.getElementById('bunt-actions-container');
-            let ctxEl = document.getElementById('bunt-runner-ctx');
-            container.innerHTML = '';
-            let anyRunner = bases[1] || bases[2] || bases[3];
-            if (!anyRunner || outCount >= 3) { panel.style.display = 'none'; updateActionReminder(); return; }
-
-            let leadBase = bases[3] ? 3 : bases[2] ? 2 : 1;
-            let labels = { 1: '1st', 2: '2nd', 3: '3rd' };
-            let targetLabels = { 1: '2nd', 2: '3rd', 3: 'Home' };
-
-            let lr = leadRunner();
-            let label = traitLabel(lr);
-            ctxEl.innerText = label ? `Lead runner: ${label}` : '';
-
-            let btnLabel = `Bunt (LR on ${labels[leadBase]} → ${targetLabels[leadBase]})`;
-            container.innerHTML = `<button class="bunt-act-btn" onclick="resolveBunt(${leadBase})">${btnLabel}</button>`;
-            panel.style.display = 'block';
-            updateBuntOdds();
-            updateActionReminder();
-        }
-
         function setupBuntDieVisual() {
             clearDisplay();
             document.getElementById('hit-die-label').innerText = "BUNT DIE";
@@ -1367,7 +1402,7 @@
             if (finalRoll <= 2) {
                 // LR out at target; batter safe at 1st; trailing runners still advance
                 msgBox.className = "msg-out";
-                msgBox.innerText = `BUNT: LR out at ${toLabel} — Batter safe at 1st`;
+                msgBox.innerText = `BUNT: LR out at ${toLabel} — Batter safe at 1st`; showStamp("BUNT FAILED", "out");
                 // Lead runner out; batter takes 1st; trailing runners advance
                 bases[1] = batter;
                 advanceTrailingRunners();
@@ -1383,7 +1418,7 @@
                 if (leadBase === 3) {
                     // LR out at Home; batter safe at 1st; r2→3rd, r1→2nd
                     msgBox.className = "msg-out";
-                    msgBox.innerText = `BUNT: LR out at Home — Batter safe at 1st`;
+                    msgBox.innerText = `BUNT: LR out at Home — Batter safe at 1st`; showStamp("BUNT FAILED", "out");
                     bases[1] = batter;
                     if (r2) bases[3] = r2;
                     if (r1) bases[2] = r1;
@@ -1392,7 +1427,7 @@
                 } else {
                     // LR advances; batter out; trailing runners advance
                     msgBox.className = "msg-out";
-                    msgBox.innerText = `BUNT: LR advances to ${toLabel} — Batter out`;
+                    msgBox.innerText = `BUNT: LR advances to ${toLabel} — Batter out`; showStamp("SUCCESSFUL BUNT", "hit");
                     if (leadBase + 1 <= 3) bases[leadBase + 1] = lrRunner;
                     advanceTrailingRunners();
                     // Make sure LR's new base isn't overwritten by trailing runner
@@ -1405,7 +1440,7 @@
             } else if (finalRoll <= 5) {
                 // LR advances; batter out; trailing runners advance
                 msgBox.className = "msg-out";
-                msgBox.innerText = `BUNT: LR advances to ${toLabel} — Batter out`;
+                msgBox.innerText = `BUNT: LR advances to ${toLabel} — Batter out`; showStamp("SUCCESSFUL BUNT", "hit");
                 if (leadBase === 3) { trackScore(1); }
                 else { bases[leadBase + 1] = lrRunner; }
                 advanceTrailingRunners();
@@ -1415,7 +1450,7 @@
             } else {
                 // Both safe; trailing runners advance
                 msgBox.className = "msg-hit";
-                msgBox.innerText = `BUNT: LR advances to ${toLabel} — Batter safe at 1st`;
+                msgBox.innerText = `BUNT: LR advances to ${toLabel} — Batter safe at 1st`; showStamp("SUCCESSFUL BUNT", "hit");
                 if (leadBase === 3) { trackScore(1); }
                 else { bases[leadBase + 1] = lrRunner; }
                 bases[1] = batter;
@@ -1439,34 +1474,164 @@
         }
 
 
+
+        // ── QUICK STEAL / BUNT BUTTONS ──────────────────────────────────
+        let quickStealSelected = new Set(); // bases selected: 2, 3, or 4
+
+        function updateQuickActionButtons() {
+            let o3 = outCount >= 3;
+            // ── Steal buttons ──
+            let can2   = !o3 && !!bases[1] && !bases[2];
+            let can3   = !o3 && !!bases[2] && !bases[3];
+            let canH   = !o3 && !!bases[3];
+            // Double steal specials: 1+2 occupied → 2nd&3rd; 2+3 occupied → 3rd&Home
+            let canDs1 = !o3 && !!bases[1] && !!bases[2] && !bases[3]; // both 2nd+3rd selectable
+            let canDs2 = !o3 && !!bases[2] && !!bases[3];               // both 3rd+Home selectable
+
+            // 2nd: stealable if r1 and not r2, OR double steal (r1+r2)
+            setQuickSteal('qs-2nd', 2, can2 || canDs1);
+            // 3rd: stealable if r2 and not r3, OR double steal (r2+r3)
+            setQuickSteal('qs-3rd', 3, can3 || canDs1 || canDs2);
+            // Home: stealable if r3
+            setQuickSteal('qs-home', 4, canH || canDs2);
+
+            // Validate current selection against new availability
+            if (!can2 && !canDs1) quickStealSelected.delete(2);
+            if (!can3 && !canDs1 && !canDs2) quickStealSelected.delete(3);
+            if (!canH && !canDs2) quickStealSelected.delete(4);
+
+            updateQuickStealConfirm();
+
+            // ── Bunt button ──
+            let canBunt = !o3 && (!!bases[1] || !!bases[2] || !!bases[3]);
+            let qb = document.getElementById('qb-btn');
+            if (canBunt) { qb.classList.add('available'); qb.disabled = false; }
+            else         { qb.classList.remove('available'); qb.disabled = true; }
+
+        }
+
+        function setQuickSteal(id, base, available) {
+            let btn = document.getElementById(id);
+            if (available) {
+                btn.classList.add('available');
+                btn.disabled = false;
+            } else {
+                btn.classList.remove('available', 'selected');
+                btn.disabled = true;
+                quickStealSelected.delete(base);
+            }
+        }
+
+        function quickStealToggle(base) {
+            let btn = document.getElementById({2:'qs-2nd',3:'qs-3rd',4:'qs-home'}[base]);
+            if (!btn.classList.contains('available') && !btn.classList.contains('selected')) return;
+            if (quickStealSelected.has(base)) {
+                quickStealSelected.delete(base);
+                btn.classList.remove('selected');
+            } else {
+                quickStealSelected.add(base);
+                btn.classList.add('selected');
+            }
+            updateQuickStealConfirm();
+        }
+
+        function updateQuickStealConfirm() {
+            let confirm = document.getElementById('qs-confirm');
+            if (quickStealSelected.size > 0) {
+                confirm.style.display = 'block';
+                confirm.innerText = quickStealSelected.size === 2 ? '▶ DOUBLE STEAL' : '▶ STEAL';
+            } else {
+                confirm.style.display = 'none';
+            }
+        }
+
+        function quickStealConfirm() {
+            let sel = [...quickStealSelected].sort();
+            quickStealSelected.clear();
+            // Reset selected state on buttons
+            ['qs-2nd','qs-3rd','qs-home'].forEach(id => document.getElementById(id).classList.remove('selected'));
+            document.getElementById('qs-confirm').style.display = 'none';
+
+            if (sel.length === 2) {
+                // Double steal — determine type
+                let type = (sel[0] === 2 && sel[1] === 3) ? '2nd_3rd' : '3rd_Home';
+                // Update lead runner trait from actual lead runner
+                let lr = leadRunner();
+                stealRunnerTrait = lr ? lr.speed : 'NORM';
+                resolveDoubleSteal(type);
+            } else {
+                let targetBase = sel[0];
+                let lr = leadRunner();
+                stealRunnerTrait = lr ? lr.speed : 'NORM';
+                resolveSingleSteal(targetBase);
+            }
+        }
+
+        function quickBunt() {
+            let leadBase = bases[3] ? 3 : bases[2] ? 2 : 1;
+            resolveBunt(leadBase);
+        }
+
+        // Build runner advancement sub-label for stamp
+        // snap = { b1, b2, b3 } before the play; adv = bases advanced (1/2/3/4=score)
+        function runnerSub(snap, adv) {
+            let count = (snap.b1 ? 1 : 0) + (snap.b2 ? 1 : 0) + (snap.b3 ? 1 : 0);
+            if (count === 0) return null;
+            let advWord = adv === 1 ? '1' : adv === 2 ? '2' : '3';
+            return count === 1 ? `RUNNER ADVANCES ${advWord}` : `RUNNERS ADVANCE ${advWord}`;
+        }
+        function snapBases() {
+            return { b1: !!bases[1], b2: !!bases[2], b3: !!bases[3] };
+        }
+
         // ── RESULT STAMP ───────────────────────────────────────────────
         let stampTimer = null;
-        function showStamp(label, type) {
+        function showStamp(label, type, sub) {
             clearTimeout(stampTimer);
             let overlay = document.getElementById('result-stamp');
             let txt = document.getElementById('stamp-text');
+            let subEl = document.getElementById('stamp-sub');
             txt.classList.remove('fading');
+            subEl.classList.remove('fading');
             txt.className = 'stamp-text stamp-' + type;
-            txt.innerText = label;
-            // Re-trigger animation by removing/re-adding class
+            // Force two-word labels onto two lines for clean fit in the stamp box
+            let words = label.split(' ');
+            txt.innerHTML = words.length > 1 ? words.join('<br>') : label;
+            // Sub line (runner advancement) — only show if provided
+            if (sub) {
+                subEl.innerText = sub;
+                subEl.style.display = 'block';
+                // Re-trigger sub animation
+                subEl.style.animation = 'none';
+                void subEl.offsetWidth;
+                subEl.style.animation = '';
+            } else {
+                subEl.style.display = 'none';
+                subEl.innerText = '';
+            }
+            // Re-trigger main animation
             overlay.classList.remove('show');
             void overlay.offsetWidth;
             overlay.classList.add('show');
             // Auto-fade after 5 seconds
             stampTimer = setTimeout(() => {
                 txt.classList.add('fading');
+                subEl.classList.add('fading');
                 setTimeout(() => overlay.classList.remove('show'), 500);
             }, 5000);
         }
         function clearStamp() {
             clearTimeout(stampTimer);
             let txt = document.getElementById('stamp-text');
+            let subEl = document.getElementById('stamp-sub');
             if (txt) txt.classList.remove('fading');
+            if (subEl) { subEl.classList.remove('fading'); subEl.style.display = 'none'; }
             document.getElementById('result-stamp').classList.remove('show');
         }
 
         // Initialize trait buttons on load
         resetBatterTraits();
+        updateQuickActionButtons();
     </script>
 </body>
 </html>
