@@ -243,12 +243,12 @@
             }
 
             .diamond-wrapper {
-                gap: 4px;
+                gap: 10px;
             }
             .diamond-container {
                 width: 130px;
                 height: 130px;
-                margin: 2px 6px;
+                margin: 2px 8px;
             }
             .base { width: 38px; height: 38px; }
             .base-inner { font-size: 9px; max-width: 32px; }
@@ -256,10 +256,10 @@
             #base-3rd { top: 46px; left: 0px;  }
             #base-1st { top: 46px; left: 92px; }
             .steal-col {
-                margin-right: 4px;
+                margin-right: 10px;
             }
             .bunt-col {
-                margin-left: 4px;
+                margin-left: 10px;
             }
             .quick-steal-btn {
                 font-size: 9px;
@@ -311,11 +311,11 @@
         #result-stamp {
             display: none;
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
+            top: 58%; left: 0; right: 0; bottom: 0;
             pointer-events: none;
             z-index: 50;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
         }
         #result-stamp.show {
             display: flex;
@@ -329,7 +329,6 @@
             padding: 10px 22px;
             border: 6px solid;
             border-radius: 6px;
-            transform: rotate(-12deg);
             opacity: 0;
             animation: stamp-in 0.25s cubic-bezier(0.2, 0.8, 0.3, 1.2) forwards;
             text-shadow: 2px 2px 0 rgba(0,0,0,0.15);
@@ -348,10 +347,10 @@
         .stamp-out  { color: #c5221f; border-color: #c5221f; background: rgba(252,232,230,0.85); }
         .stamp-walk { color: #b06000; border-color: #b06000; background: rgba(254,239,195,0.85); }
         @keyframes stamp-in {
-            0%   { opacity: 0; transform: rotate(-12deg) scale(1.6); }
-            60%  { opacity: 1; transform: rotate(-12deg) scale(0.95); }
-            80%  { transform: rotate(-12deg) scale(1.03); }
-            100% { opacity: 1; transform: rotate(-12deg) scale(1); }
+            0%   { opacity: 0; transform: scale(1.6); }
+            60%  { opacity: 1; transform: scale(0.95); }
+            80%  { transform: scale(1.03); }
+            100% { opacity: 1; transform: scale(1); }
         }
         .stamp-sub {
             font-family: 'Arial Black', 'Impact', sans-serif;
@@ -364,7 +363,6 @@
             border-radius: 5px;
             color: #6f42c1;
             background: rgba(237,233,254,0.90);
-            transform: rotate(-12deg);
             opacity: 0;
             animation: stamp-in 0.3s cubic-bezier(0.2, 0.8, 0.3, 1.2) 0.15s forwards;
             text-shadow: 1px 1px 0 rgba(0,0,0,0.1);
@@ -378,6 +376,7 @@
         @media (max-width: 700px) {
             .stamp-text { font-size: 30px; border-width: 4px; letter-spacing: 1px; max-width: 85%; padding: 8px 14px; }
             .stamp-sub  { font-size: 13px; border-width: 2px; }
+            #result-stamp { top: 58%; }
         }
 
         /* ── QUICK ACTION BUTTONS (steal/bunt around diamond) ─────────── */
@@ -385,7 +384,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 14px;
+            gap: 26px;
             margin: 2px auto;
         }
         .steal-col {
@@ -831,11 +830,21 @@
             let finalRoll = rawRoll + mod;
             document.getElementById('die-hit').innerText = rawRoll;
             let msgBox = document.getElementById('result-msg');
+            let detailsBox = document.getElementById('hit-details');
             if (finalRoll <= 3) {
+                // Lead runner caught — defense's throw went to the lead base, so the trailing
+                // runner safely advances one base on the same play (standard double-steal result)
                 msgBox.className = "msg-out"; msgBox.innerText = "OUT! Lead runner cut down.";
                 showStamp("CAUGHT STEALING", "out");
-                if (type === '2nd_3rd') { bases[2] = null; }
-                else { bases[3] = null; }
+                if (type === '2nd_3rd') {
+                    // Lead runner (on 2nd, heading to 3rd) is out; trailing runner (1st) advances to 2nd
+                    bases[2] = bases[1]; bases[1] = null;
+                    detailsBox.innerText = 'Trailing runner advances to 2nd on the play.';
+                } else {
+                    // Lead runner (on 3rd, heading home) is out; trailing runner (2nd) advances to 3rd
+                    bases[3] = bases[2]; bases[2] = null;
+                    detailsBox.innerText = 'Trailing runner advances to 3rd on the play.';
+                }
                 addOuts(1);
             } else if (finalRoll <= 5) {
                 msgBox.className = "msg-out"; msgBox.innerText = "OUT! Trailing runner cut down.";
@@ -910,6 +919,7 @@
             document.getElementById('bHand' + hand).classList.add('active-b');
             let playBtn = document.getElementById('play-btn'); playBtn.classList.remove('faded'); playBtn.disabled = false;
             updateMatchup(); updateDieVisualShape(getEffectiveDie());
+            updateQuickActionButtons();
         }
 
         function getEffectiveDie() {
@@ -959,6 +969,7 @@
             resetBatterTraits();
             ['tp-norm','ts-norm','tc-norm'].forEach(id => document.getElementById(id).classList.add('illuminate-trait'));
             updateMatchup();
+            updateQuickActionButtons();
         }
 
         function handleHit() {
@@ -1053,34 +1064,53 @@
             document.getElementById('container-def').style.display = 'block';
             let msgBox = document.getElementById('result-msg');
             let detailsBox = document.getElementById('hit-details');
+
             if (defRoll === 12) {
+                // Robbed — hit turned into an out, runners hold
                 const grabs = ["Incredible diving stop — OUT (robbed!)","Reaches back and hauls it in — OUT (spectacular)","Full extension, takes one away — OUT"];
                 msgBox.innerText = grabs[Math.floor(Math.random()*grabs.length)]; showStamp("OUT","out","HIT ROBBED!");
                 msgBox.className = "msg-out"; addOuts(1);
-            } else {
-                let held = (defRoll >= 3 && defRoll <= 9);
+
+            } else if (defRoll >= 10) {
+                // Great defense — hit goes down a level (Triple→Double, Double→Single); Single remains a Single
                 if (hitType === "DOUBLE") {
                     const doubleContact = { "LF": "down the left-field line", "CF": "into the gap", "RF": "to right-center" };
-                    if (held) {
-                        msgBox.innerText = `DOUBLE — ${doubleContact[pos] || 'to the outfield'}, ${pos} cuts it off`; showStamp("DOUBLE","hit",runnerSub(snap,2));
-                        detailsBox.innerText = 'Batter held to 2nd; runners advance 2.';
-                        advanceBasesOnHit("DOUBLE", 2);
-                    } else {
-                        msgBox.innerText = `DOUBLE — ${doubleContact[pos] || 'to the outfield'}, gets past ${pos}`; showStamp("DOUBLE","hit",runnerSub(snap,3));
-                        detailsBox.innerText = 'Ball rolls to the wall; runners advance 3.';
-                        advanceBasesOnHit("DOUBLE", 3);
-                    }
+                    msgBox.innerText = `SINGLE — ${doubleContact[pos] || 'to the outfield'}, ${pos} makes a great play to hold it to one`; showStamp("SINGLE","hit",runnerSub(snap,2));
+                    detailsBox.innerText = 'Excellent defense; double reduced to single, runners advance 2.';
+                    advanceBasesOnHit("SINGLE", 2);
                 } else {
                     const singleContact = { "1B": "toward first", "2B": "up the middle", "3B": "down the line", "SS": "in the hole" };
-                    if (held) {
-                        msgBox.innerText = `SINGLE — grounder ${singleContact[pos] || 'to the infield'}, ${pos} fields it cleanly`; showStamp("SINGLE","hit",runnerSub(snap,1));
-                        detailsBox.innerText = 'Runners hold on the play.';
-                        advanceBasesOnHit("SINGLE", 1);
-                    } else {
-                        msgBox.innerText = `SINGLE — grounder ${singleContact[pos] || 'to the infield'}, ${pos} bobbles it`; showStamp("SINGLE","hit",runnerSub(snap,2));
-                        detailsBox.innerText = 'Error on the play; runners take an extra base.';
-                        advanceBasesOnHit("SINGLE", 2);
-                    }
+                    msgBox.innerText = `SINGLE — grounder ${singleContact[pos] || 'to the infield'}, ${pos} makes an excellent play`; showStamp("SINGLE","hit",runnerSub(snap,1));
+                    detailsBox.innerText = 'Outstanding defense; runners hold on the play.';
+                    advanceBasesOnHit("SINGLE", 1);
+                }
+
+            } else if (defRoll <= 2) {
+                // Error — runners take an extra base
+                if (hitType === "DOUBLE") {
+                    const doubleContact = { "LF": "down the left-field line", "CF": "into the gap", "RF": "to right-center" };
+                    msgBox.innerText = `DOUBLE — ${doubleContact[pos] || 'to the outfield'}, ${pos} boots it`; showStamp("DOUBLE","hit","ERROR!");
+                    detailsBox.innerText = 'Error on the play; runners take an extra base.';
+                    advanceBasesOnHit("DOUBLE", 3);
+                } else {
+                    const singleContact = { "1B": "toward first", "2B": "up the middle", "3B": "down the line", "SS": "in the hole" };
+                    msgBox.innerText = `SINGLE — grounder ${singleContact[pos] || 'to the infield'}, ${pos} bobbles it`; showStamp("SINGLE","hit","ERROR!");
+                    detailsBox.innerText = 'Error on the play; runners take an extra base.';
+                    advanceBasesOnHit("SINGLE", 2);
+                }
+
+            } else {
+                // 3-9: No change — hit stands as originally rolled
+                if (hitType === "DOUBLE") {
+                    const doubleContact = { "LF": "down the left-field line", "CF": "into the gap", "RF": "to right-center" };
+                    msgBox.innerText = `DOUBLE — ${doubleContact[pos] || 'to the outfield'}, ${pos} cuts it off`; showStamp("DOUBLE","hit",runnerSub(snap,2));
+                    detailsBox.innerText = 'Batter held to 2nd; runners advance 2.';
+                    advanceBasesOnHit("DOUBLE", 2);
+                } else {
+                    const singleContact = { "1B": "toward first", "2B": "up the middle", "3B": "down the line", "SS": "in the hole" };
+                    msgBox.innerText = `SINGLE — grounder ${singleContact[pos] || 'to the infield'}, ${pos} fields it cleanly`; showStamp("SINGLE","hit",runnerSub(snap,1));
+                    detailsBox.innerText = 'Runners hold on the play.';
+                    advanceBasesOnHit("SINGLE", 1);
                 }
             }
             postResolutionLoop();
@@ -1103,10 +1133,10 @@
                 "Fanned on a filthy changeup — K",
             ];
             const groundFlavor = {
-                3: ["Chopper to the right side — G3","Slow roller, first baseman charges — G3","Tapper right at first — G3"],
-                4: ["Routine grounder to second — 4-3","Up the middle, second baseman ranges — 4-3","Bouncer to second — 4-3"],
-                5: ["Nubber down the line, third baseman pounces — 5-3","Hot shot at the hot corner — 5-3","Hard shot to third — 5-3"],
-                6: ["In the hole, shortstop dives and fires — 6-3","Backhander deep in the hole — 6-3","Scooped and fired from short — 6-3"],
+                3: ["Chopper to the right side","Slow roller, first baseman charges","Tapper right at first"],
+                4: ["Routine grounder to second","Up the middle, second baseman ranges","Bouncer to second"],
+                5: ["Nubber down the line, third baseman pounces","Hot shot at the hot corner","Hard shot to third"],
+                6: ["In the hole, shortstop dives and fires","Backhander deep in the hole","Scooped and fired from short"],
             };
             const lineFlavor = {
                 3: ["Frozen rope right at first — L3","Laser to the first baseman — L3"],
@@ -1120,6 +1150,21 @@
                 9: ["Fly ball to right, he camps under it — F9","Pulled to right, caught — F9","Long fly to right, no trouble — F9"],
             };
 
+            // Maps fielding position (3=1B,4=2B,5=3B,6=SS) + force location (1=first,2=second,3=third/home)
+            // to correct scoring notation, e.g. 5-4 (third to second, force at 2nd), not always X-3
+            function groundOutScoring(pos, force) {
+                if (force === 1) {
+                    // Standard out at first
+                    return pos === 3 ? '3U' : `${pos}-3`;
+                } else if (force === 2) {
+                    // Force at second
+                    return `${pos}-4`;
+                } else {
+                    // Force at third or home
+                    return `${pos}-5`;
+                }
+            }
+
             let b1 = bases[1], b2 = bases[2], b3 = bases[3];
             let noRunners = !b1 && !b2 && !b3;
             let runnerDetail = '';
@@ -1132,17 +1177,21 @@
             }
 
             if (ones >= 3 && ones <= 6) {
-                let flavor = isLineout ? pick(lineFlavor[ones]) : pick(groundFlavor[ones]);
-                msgBox.innerText = flavor;
-
                 let _outSnap = snapBases();
+
                 if (isLineout || noRunners) {
+                    msgBox.innerText = isLineout ? pick(lineFlavor[ones]) : `${pick(groundFlavor[ones])} — ${groundOutScoring(ones, 1)}`;
                     if (isLineout && !noRunners) runnerDetail = 'Runners hold — no advancement on a liner.';
                     addOuts(1);
                 } else {
                     addOuts(1);
                     let detail = applyInfieldGrounder();
                     renderBases();
+
+                    // Build flavor text using the ACTUAL force-out location for correct scoring notation
+                    let scoring = isLineout ? null : groundOutScoring(ones, forceOutLoc);
+                    let baseFlavor = isLineout ? pick(lineFlavor[ones]) : pick(groundFlavor[ones]);
+                    msgBox.innerText = isLineout ? baseFlavor : `${baseFlavor} — ${scoring}`;
 
                     if (outCount >= 3) {
                         // Third out — suppress runner detail
@@ -1168,7 +1217,8 @@
                     let _oc = (_outSnap.b1?1:0)+(_outSnap.b2?1:0)+(_outSnap.b3?1:0);
                     let _moved = _oc > 0 && runnerDetail && !runnerDetail.includes('hold') && !runnerDetail.includes('holds');
                     let _sub = _moved ? (_oc === 1 ? 'RUNNER ADVANCES' : 'RUNNERS ADVANCE') : null;
-                    showStamp('OUT','out',_sub);
+                    let _scoreSub = isLineout ? null : groundOutScoring(ones, isLineout ? 1 : forceOutLoc);
+                    showStamp('OUT','out', _sub || _scoreSub);
                 })(); }
                 postResolutionLoop();
                 return;
@@ -1186,7 +1236,8 @@
                 let _flyCount = (_flySnap.b1?1:0)+(_flySnap.b2?1:0)+(_flySnap.b3?1:0);
                 let _flySub = (_flyCount > 0 && runnerDetail && (runnerDetail.includes('scores') || runnerDetail.includes('→')))
                     ? (_flyCount === 1 ? 'RUNNER ADVANCES' : 'RUNNERS ADVANCE') : null;
-                detailsBox.innerText = runnerDetail; showStamp("OUT","out",_flySub);
+                let _flyScoring = { 7: 'F7', 8: 'F8', 9: 'F9' }[ones];
+                detailsBox.innerText = runnerDetail; showStamp("OUT","out", _flySub || _flyScoring);
                 postResolutionLoop();
                 return;
             }
@@ -1196,22 +1247,33 @@
             postResolutionLoop();
         }
 
+        // forceOutLoc tracks which base the lead/force out occurred at for this play:
+        // 1 = batter out at first (standard X-3 notation)
+        // 2 = runner forced out at second (X-4 notation, e.g. 5-4)
+        // 3 = runner out at third or home (X-5 notation)
+        // null = batter out at first by default (used when function returns early)
+        let forceOutLoc = 1;
+
         function applyInfieldGrounder() {
             let r1 = bases[1], r2 = bases[2], r3 = bases[3];
             let b1 = !!r1, b2 = !!r2, b3 = !!r3;
             let detail = '';
             let is3BorSS = (ones === 5 || ones === 6);
             let batter = newRunner();
+            forceOutLoc = 1; // default: batter out at first
 
             if (b1 && b2 && b3) {
                 if (mss <= 49) {
                     detail = 'FC — Batter out at first; 1st→2nd, 2nd→3rd, 3rd scores.';
+                    forceOutLoc = 1;
                     bases = { 1: null, 2: r1, 3: r2 }; trackScore(1);
                 } else if (mss <= 69) {
                     detail = 'FC — Runner out at 2nd; batter safe at 1st; 2nd→3rd, 3rd scores.';
+                    forceOutLoc = 2;
                     bases = { 1: batter, 2: null, 3: r2 }; trackScore(1);
                 } else {
                     detail = 'FC — Runner on 3rd out at home; batter to 1st, runners advance.';
+                    forceOutLoc = 3;
                     bases = { 1: batter, 2: r1, 3: r2 }; addOuts(1);
                 }
                 return detail;
@@ -1220,8 +1282,10 @@
             if (!b1 && b2 && b3) {
                 if (is3BorSS || mss >= 70) {
                     detail = 'Batter out; 2nd and 3rd hold.';
+                    forceOutLoc = 1;
                 } else {
                     detail = 'Batter out at 1st; 2nd→3rd, 3rd scores.';
+                    forceOutLoc = 1;
                     bases = { 1: null, 2: null, 3: r2 }; trackScore(1);
                 }
                 return detail;
@@ -1231,21 +1295,26 @@
                 if (mss <= 49) {
                     if (is3BorSS) {
                         detail = 'FC — Batter out; 1st→2nd; 3rd holds.';
+                        forceOutLoc = 1;
                         bases = { 1: null, 2: r1, 3: r3 };
                     } else {
                         detail = 'FC — Batter out; 1st→2nd; 3rd scores.';
+                        forceOutLoc = 1;
                         bases = { 1: null, 2: r1, 3: null }; trackScore(1);
                     }
                 } else if (mss <= 69) {
                     if (is3BorSS) {
                         detail = 'FC — Runner out at 2nd; batter safe at 1st; 3rd holds.';
+                        forceOutLoc = 2;
                         bases = { 1: batter, 2: null, 3: r3 };
                     } else {
                         detail = 'FC — Runner out at 2nd; batter safe at 1st; 3rd scores.';
+                        forceOutLoc = 2;
                         bases = { 1: batter, 2: null, 3: null }; trackScore(1);
                     }
                 } else {
                     detail = 'DOUBLE PLAY — Batter and runner on 1st out; runner on 3rd holds.';
+                    forceOutLoc = 2;
                     bases = { 1: null, 2: null, 3: r3 }; addOuts(1);
                 }
                 return detail;
@@ -1254,16 +1323,20 @@
             if (b1 && b2 && !b3) {
                 if (mss <= 49) {
                     detail = 'FC — Batter out; 1st→2nd, 2nd→3rd.';
+                    forceOutLoc = 1;
                     bases = { 1: null, 2: r1, 3: r2 };
                 } else if (mss <= 69) {
                     detail = 'FC — Runner out at 2nd; batter safe at 1st; 2nd→3rd.';
+                    forceOutLoc = 2;
                     bases = { 1: batter, 2: null, 3: r2 };
                 } else {
                     if (mss > 100) {
                         detail = 'TRIPLE PLAY — All three out!';
+                        forceOutLoc = 2;
                         bases = { 1: null, 2: null, 3: null }; addOuts(2);
                     } else {
                         detail = 'DOUBLE PLAY — Batter and runner on 1st out; 2nd→3rd.';
+                        forceOutLoc = 2;
                         bases = { 1: null, 2: null, 3: r2 }; addOuts(1);
                     }
                 }
@@ -1273,11 +1346,14 @@
             if (!b1 && !b2 && b3) {
                 if (is3BorSS) {
                     detail = 'Batter out; 3rd holds (5/6 on table).';
+                    forceOutLoc = 1;
                 } else if (mss <= 49) {
                     detail = 'Batter out; 3rd scores.';
+                    forceOutLoc = 1;
                     bases[3] = null; trackScore(1);
                 } else {
                     detail = 'Batter out; 3rd holds.';
+                    forceOutLoc = 1;
                 }
                 return detail;
             }
@@ -1285,9 +1361,11 @@
             if (!b1 && b2 && !b3) {
                 if (mss <= 49 && !is3BorSS) {
                     detail = 'Batter out; FC — 2nd→3rd.';
+                    forceOutLoc = 1;
                     bases = { 1: null, 2: null, 3: r2 };
                 } else {
                     detail = 'Batter out; 2nd holds.';
+                    forceOutLoc = 1;
                 }
                 return detail;
             }
@@ -1295,12 +1373,15 @@
             if (b1 && !b2 && !b3) {
                 if (mss <= 49) {
                     detail = 'FC — Batter out; 1st→2nd.';
+                    forceOutLoc = 1;
                     bases = { 1: null, 2: r1, 3: null };
                 } else if (mss <= 69) {
                     detail = 'FC — Runner out at 2nd; batter safe at 1st.';
+                    forceOutLoc = 2;
                     bases[1] = batter;
                 } else {
                     detail = 'DOUBLE PLAY — Batter and runner on 1st both out.';
+                    forceOutLoc = 2;
                     bases[1] = null; addOuts(1);
                 }
                 return detail;
@@ -1448,9 +1529,9 @@
                 detailsBox.innerText = buildTrailingDetail(leadBase, r1, r2, true);
 
             } else {
-                // Both safe; trailing runners advance
+                // Both safe; trailing runners advance — this is a bunt single
                 msgBox.className = "msg-hit";
-                msgBox.innerText = `BUNT: LR advances to ${toLabel} — Batter safe at 1st`; showStamp("SUCCESSFUL BUNT", "hit");
+                msgBox.innerText = `BUNT: LR advances to ${toLabel} — Batter safe at 1st`; showStamp("BUNT SINGLE", "hit");
                 if (leadBase === 3) { trackScore(1); }
                 else { bases[leadBase + 1] = lrRunner; }
                 bases[1] = batter;
@@ -1503,7 +1584,9 @@
             updateQuickStealConfirm();
 
             // ── Bunt button ──
-            let canBunt = !o3 && (!!bases[1] || !!bases[2] || !!bases[3]);
+            // Require batter hand to be selected first, so the bunt is tied to the
+            // batter currently being set up (traits/contact), not the previous one.
+            let canBunt = !o3 && !!bHand && (!!bases[1] || !!bases[2] || !!bases[3]);
             let qb = document.getElementById('qb-btn');
             if (canBunt) { qb.classList.add('available'); qb.disabled = false; }
             else         { qb.classList.remove('available'); qb.disabled = true; }
