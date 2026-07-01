@@ -37,6 +37,7 @@
             transition: opacity 0.2s, border-color 0.2s;
         }
         .active-p { background: #0055ff; color: white; border-color: #0033aa; }
+        .active-p-neg { background: #c5221f; color: white; border-color: #a61c19; }
         .active-b { background: #137333; color: white; border-color: #0b4b21; }
         .active-hand { background: #222; color: white; border-color: #000; }
         .active-out { background: #c5221f; color: white; border-color: #a61c19; }
@@ -354,12 +355,12 @@
         }
         .stamp-sub {
             font-family: 'Arial Black', 'Impact', sans-serif;
-            font-size: 32px;
+            font-size: 40px;
             font-weight: 900;
             letter-spacing: 2px;
             text-transform: uppercase;
-            padding: 6px 18px;
-            border: 4px solid #6f42c1;
+            padding: 8px 20px;
+            border: 5px solid #6f42c1;
             border-radius: 5px;
             color: #6f42c1;
             background: rgba(237,233,254,0.90);
@@ -375,7 +376,7 @@
         }
         @media (max-width: 700px) {
             .stamp-text { font-size: 30px; border-width: 4px; letter-spacing: 1px; max-width: 85%; padding: 8px 14px; }
-            .stamp-sub  { font-size: 22px; border-width: 3px; padding: 4px 12px; }
+            .stamp-sub  { font-size: 26px; border-width: 4px; padding: 6px 14px; }
             #result-stamp { top: 58%; }
         }
 
@@ -501,10 +502,14 @@
                 <div style="text-align: center;">
                     <div class="section-title">Pitcher Base Die</div>
                     <div class="row">
-                        <button id="p4" onclick="setPitcherDie(4)">d4</button>
-                        <button id="p8" onclick="setPitcherDie(8)" class="active-p">d8</button>
-                        <button id="p12" onclick="setPitcherDie(12)">d12</button>
                         <button id="p20" onclick="setPitcherDie(20)">d20</button>
+                        <button id="p12" onclick="setPitcherDie(12)">d12</button>
+                        <button id="p8" onclick="setPitcherDie(8)" class="active-p">d8</button>
+                        <button id="p4" onclick="setPitcherDie(4)">d4</button>
+                        <button id="pn4" onclick="setPitcherDie(-4)">-d4</button>
+                        <button id="pn8" onclick="setPitcherDie(-8)">-d8</button>
+                        <button id="pn12" onclick="setPitcherDie(-12)">-d12</button>
+                        <button id="pn20" onclick="setPitcherDie(-20)">-d20</button>
                     </div>
                 </div>
                 <div style="text-align: center; margin-top: 4px;">
@@ -512,6 +517,7 @@
                     <div class="trait-row">
                         <div class="trait-group">
                             <span>PWR:</span>
+                            <button class="trait-btn" id="tp-pmm"   onclick="setBatterTrait('power','P--')">P--</button>
                             <button class="trait-btn active-trait-norm" id="tp-minus" onclick="setBatterTrait('power','P-')">P-</button>
                             <button class="trait-btn active-trait-norm" id="tp-norm"  onclick="setBatterTrait('power','NORM')">Norm</button>
                             <button class="trait-btn" id="tp-plus"  onclick="setBatterTrait('power','P+')">P+</button>
@@ -632,7 +638,7 @@
         // Current batter traits (reset each batter)
         let batterTraits = { power: 'NORM', speed: 'NORM', contact: 'NORM' };
 
-        const dieSteps = [4, 8, 12, 20];
+        const dieSteps = [-20, -12, -8, -4, 4, 8, 12, 20];
         const positionNames = { "1B": "first baseman (1B)", "2B": "second baseman (2B)", "3B": "third baseman (3B)", "SS": "shortstop (SS)", "LF": "left fielder (LF)", "CF": "center fielder (CF)", "RF": "right fielder (RF)" };
 
         // FIX #5: newRunner only stores speed (only trait that affects base running)
@@ -712,6 +718,7 @@
             let el = document.getElementById('power-mod-display');
             if (!el) return;
             const msgs = {
+                'P--': 'P−− = −2 to hit die roll',
                 'P-':  'P− = −1 to hit die roll',
                 'NORM': '',
                 'P+':  'P+ = +1 to hit die roll',
@@ -723,7 +730,7 @@
         function setBatterTrait(category, value) {
             batterTraits[category] = value;
             const groups = {
-                power:   { ids: ['tp-minus','tp-norm','tp-plus','tp-pp'],   vals: ['P-','NORM','P+','P++'],  cls: 'active-trait-p' },
+                power:   { ids: ['tp-pmm','tp-minus','tp-norm','tp-plus','tp-pp'],   vals: ['P--','P-','NORM','P+','P++'],  cls: 'active-trait-p' },
                 speed:   { ids: ['ts-minus','ts-norm','ts-plus'],           vals: ['S-','NORM','S+'],         cls: 'active-trait-s' },
                 contact: { ids: ['tc-minus','tc-norm','tc-plus'],           vals: ['C-','NORM','C+'],         cls: 'active-trait-c' },
             };
@@ -738,7 +745,7 @@
 
         function resetBatterTraits() {
             batterTraits = { power: 'NORM', speed: 'NORM', contact: 'NORM' };
-            ['tp-minus','tp-norm','tp-plus','tp-pp','ts-minus','ts-norm','ts-plus','tc-minus','tc-norm','tc-plus'].forEach(id => {
+            ['tp-pmm','tp-minus','tp-norm','tp-plus','tp-pp','ts-minus','ts-norm','ts-plus','tc-minus','tc-norm','tc-plus'].forEach(id => {
                 document.getElementById(id).classList.remove('active-trait-p','active-trait-s','active-trait-c','active-trait-norm','illuminate-trait');
             });
             ['tp-norm','ts-norm','tc-norm'].forEach(id => document.getElementById(id).classList.add('active-trait-norm'));
@@ -900,8 +907,9 @@
 
         function setPitcherDie(size) {
             basePitcherDie = size;
-            document.querySelectorAll('.left-panel button').forEach(b => { if(['p4','p8','p12','p20'].includes(b.id)) b.classList.remove('active-p'); });
-            document.getElementById('p' + size).classList.add('active-p');
+            ['p4','p8','p12','p20','pn4','pn8','pn12','pn20'].forEach(id => { let b = document.getElementById(id); if(b) b.classList.remove('active-p','active-p-neg'); });
+            let btnId = size < 0 ? 'pn' + Math.abs(size) : 'p' + size;
+            document.getElementById(btnId).classList.add(size < 0 ? 'active-p-neg' : 'active-p');
             updateMatchup(); updateDieVisualShape(getEffectiveDie());
         }
 
@@ -923,24 +931,43 @@
         }
 
         function getEffectiveDie() {
-            if (!bHand) return basePitcherDie; 
-            if (pHand !== bHand || bHand === 'S') return dieSteps[Math.max(0, dieSteps.indexOf(basePitcherDie) - 1)];
+            if (!bHand) return basePitcherDie;
+            if (pHand !== bHand || bHand === 'S') {
+                let idx = dieSteps.indexOf(basePitcherDie);
+                // For positive dice: advantage moves die down (smaller = less pitcher help)
+                // For negative dice: advantage moves die up (less negative = less pitcher hurt)
+                let newIdx = basePitcherDie < 0 ? Math.min(dieSteps.length - 1, idx + 1) : Math.max(0, idx - 1);
+                return dieSteps[newIdx];
+            }
             return basePitcherDie;
         }
 
         function updateDieVisualShape(dieSize) {
             let target = document.getElementById('pitcher-die-target');
             let cachedValue = document.getElementById('die-pitch') ? document.getElementById('die-pitch').innerText : "0";
-            const svgs = {4: `<svg class="die-svg" viewBox="0 0 100 100"><polygon class="fill-blue outer-edge" points="50,5 5,85 95,85"/></svg>`, 8: `<svg class="die-svg" viewBox="0 0 100 100"><polygon class="fill-blue outer-edge" points="50,2 98,35 50,98 2,35"/></svg>`, 12: `<svg class="die-svg" viewBox="0 0 100 100"><polygon class="fill-blue outer-edge" points="50,2 95,25 78,85 22,85 5,25"/></svg>`, 20: `<svg class="die-svg" viewBox="0 0 100 100"><polygon class="fill-blue outer-edge" points="50,2 95,25 95,75 50,98 5,75 5,25"/></svg>`};
-            target.innerHTML = svgs[dieSize] + `<div id="die-pitch" class="die-text">${cachedValue}</div>`;
+            const svgs = {
+                4:   `<svg class="die-svg" viewBox="0 0 100 100"><polygon class="fill-blue outer-edge" points="50,5 5,85 95,85"/></svg>`,
+                8:   `<svg class="die-svg" viewBox="0 0 100 100"><polygon class="fill-blue outer-edge" points="50,2 98,35 50,98 2,35"/></svg>`,
+                12:  `<svg class="die-svg" viewBox="0 0 100 100"><polygon class="fill-blue outer-edge" points="50,2 95,25 78,85 22,85 5,25"/></svg>`,
+                20:  `<svg class="die-svg" viewBox="0 0 100 100"><polygon class="fill-blue outer-edge" points="50,2 95,25 95,75 50,98 5,75 5,25"/></svg>`,
+                '-4':  `<svg class="die-svg" viewBox="0 0 100 100"><polygon class="fill-red outer-edge" points="50,5 5,85 95,85"/></svg>`,
+                '-8':  `<svg class="die-svg" viewBox="0 0 100 100"><polygon class="fill-red outer-edge" points="50,2 98,35 50,98 2,35"/></svg>`,
+                '-12': `<svg class="die-svg" viewBox="0 0 100 100"><polygon class="fill-red outer-edge" points="50,2 95,25 78,85 22,85 5,25"/></svg>`,
+                '-20': `<svg class="die-svg" viewBox="0 0 100 100"><polygon class="fill-red outer-edge" points="50,2 95,25 95,75 50,98 5,75 5,25"/></svg>`,
+            };
+            target.innerHTML = (svgs[dieSize] || svgs[String(dieSize)]) + `<div id="die-pitch" class="die-text">${cachedValue}</div>`;
         }
 
         function updateMatchup() {
             let statusBox = document.getElementById('matchup-text');
             if (!bHand) { statusBox.innerText = "Select Batter Stance"; statusBox.style.color = "#333"; return; }
             let effective = getEffectiveDie();
-            if (effective < basePitcherDie) { statusBox.innerText = "★ Advantage! d" + basePitcherDie + " ➔ d" + effective; statusBox.style.color = "#137333"; }
-            else { statusBox.innerText = "Same-Hand Matchup (Full d" + basePitcherDie + ")"; statusBox.style.color = "#0055ff"; }
+            function dieLabel(n) { return n < 0 ? "-d" + Math.abs(n) : "d" + n; }
+            // Advantage exists when effective die is more favorable to the batter than the base die:
+            // For positive dice: lower value = advantage; for negative dice: higher (less negative) = advantage
+            let hasAdvantage = basePitcherDie < 0 ? effective > basePitcherDie : effective < basePitcherDie;
+            if (hasAdvantage) { statusBox.innerText = "★ Advantage! " + dieLabel(basePitcherDie) + " ➔ " + dieLabel(effective); statusBox.style.color = "#137333"; }
+            else { statusBox.innerText = "Same-Hand Matchup (Full " + dieLabel(basePitcherDie) + ")"; statusBox.style.color = "#0055ff"; }
         }
 
         function clearDisplay() {
@@ -953,7 +980,12 @@
             if (!bHand) return;
             clearDisplay(); clearStamp();
             tens = Math.floor(Math.random() * 10) * 10; ones = Math.floor(Math.random() * 10);
-            pitch = Math.floor(Math.random() * getEffectiveDie()) + 1;
+            let effDie = getEffectiveDie();
+            if (effDie < 0) {
+                pitch = -(Math.floor(Math.random() * Math.abs(effDie)) + 1);
+            } else {
+                pitch = Math.floor(Math.random() * effDie) + 1;
+            }
             mss = tens + ones + pitch;
             document.getElementById('die-tens').innerText = tens === 0 ? "00" : tens;
             document.getElementById('die-ones').innerText = ones;
@@ -980,7 +1012,7 @@
             let detailsBox = document.getElementById('hit-details');
             msgBox.className = "msg-hit";
 
-            let powerShift = (batterTraits.power === 'P+') ? 1 : (batterTraits.power === 'P++') ? 2 : (batterTraits.power === 'P-') ? -1 : 0;
+            let powerShift = (batterTraits.power === 'P++') ? 2 : (batterTraits.power === 'P+') ? 1 : (batterTraits.power === 'P-') ? -1 : (batterTraits.power === 'P--') ? -2 : 0;
             let adjRoll = hitRoll + powerShift;
             document.getElementById('die-hit').innerText = adjRoll;
 
