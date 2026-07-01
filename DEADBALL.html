@@ -354,12 +354,12 @@
         }
         .stamp-sub {
             font-family: 'Arial Black', 'Impact', sans-serif;
-            font-size: 18px;
+            font-size: 32px;
             font-weight: 900;
             letter-spacing: 2px;
             text-transform: uppercase;
-            padding: 4px 12px;
-            border: 3px solid #6f42c1;
+            padding: 6px 18px;
+            border: 4px solid #6f42c1;
             border-radius: 5px;
             color: #6f42c1;
             background: rgba(237,233,254,0.90);
@@ -375,7 +375,7 @@
         }
         @media (max-width: 700px) {
             .stamp-text { font-size: 30px; border-width: 4px; letter-spacing: 1px; max-width: 85%; padding: 8px 14px; }
-            .stamp-sub  { font-size: 13px; border-width: 2px; }
+            .stamp-sub  { font-size: 22px; border-width: 3px; padding: 4px 12px; }
             #result-stamp { top: 58%; }
         }
 
@@ -1086,16 +1086,29 @@
                 }
 
             } else if (defRoll <= 2) {
-                // Error — runners take an extra base
+                // Error — hit stands, batter AND all runners each advance one extra base
+                const errorSingleFlavor = [
+                    `grounder ${{'1B':'toward first','2B':'up the middle','3B':'down the line','SS':'in the hole'}[pos]||'to the infield'}, ${pos} boots the throw`,
+                    `grounder ${{'1B':'toward first','2B':'up the middle','3B':'down the line','SS':'in the hole'}[pos]||'to the infield'}, ${pos} can't handle it`,
+                    `grounder ${{'1B':'toward first','2B':'up the middle','3B':'down the line','SS':'in the hole'}[pos]||'to the infield'}, ${pos} bobbles and throws wild`,
+                ];
+                const errorDoubleFlavor = [
+                    `${{ "LF":"down the left-field line","CF":"into the gap","RF":"to right-center"}[pos]||'to the outfield'}, ${pos} misplays it badly`,
+                    `${{ "LF":"down the left-field line","CF":"into the gap","RF":"to right-center"}[pos]||'to the outfield'}, ${pos} boots it off the wall`,
+                ];
                 if (hitType === "DOUBLE") {
-                    const doubleContact = { "LF": "down the left-field line", "CF": "into the gap", "RF": "to right-center" };
-                    msgBox.innerText = `DOUBLE — ${doubleContact[pos] || 'to the outfield'}, ${pos} boots it`; showStamp("DOUBLE","hit","ERROR!");
-                    detailsBox.innerText = 'Error on the play; runners take an extra base.';
+                    let flavor = errorDoubleFlavor[Math.floor(Math.random()*errorDoubleFlavor.length)];
+                    msgBox.innerText = `DOUBLE — ${flavor}`;
+                    showStamp("DOUBLE","hit","ERROR!");
+                    // Runners advance 3 (2 for double + 1 extra for error); batter goes to 3rd
+                    detailsBox.innerText = 'Error — all runners advance an extra base on the throw.';
                     advanceBasesOnHit("DOUBLE", 3);
                 } else {
-                    const singleContact = { "1B": "toward first", "2B": "up the middle", "3B": "down the line", "SS": "in the hole" };
-                    msgBox.innerText = `SINGLE — grounder ${singleContact[pos] || 'to the infield'}, ${pos} bobbles it`; showStamp("SINGLE","hit","ERROR!");
-                    detailsBox.innerText = 'Error on the play; runners take an extra base.';
+                    let flavor = errorSingleFlavor[Math.floor(Math.random()*errorSingleFlavor.length)];
+                    msgBox.innerText = `SINGLE — ${flavor}`;
+                    showStamp("SINGLE","hit","ERROR!");
+                    // Runners advance 2 (1 for single + 1 extra for error); batter goes to 2nd
+                    detailsBox.innerText = 'Error — batter reaches 2nd; all runners advance an extra base.';
                     advanceBasesOnHit("SINGLE", 2);
                 }
 
@@ -1153,16 +1166,14 @@
             // Maps fielding position (3=1B,4=2B,5=3B,6=SS) + force location (1=first,2=second,3=third/home)
             // to correct scoring notation, e.g. 5-4 (third to second, force at 2nd), not always X-3
             function groundOutScoring(pos, force) {
-                if (force === 1) {
-                    // Standard out at first
-                    return pos === 3 ? '3U' : `${pos}-3`;
-                } else if (force === 2) {
-                    // Force at second
-                    return `${pos}-4`;
-                } else {
-                    // Force at third or home
-                    return `${pos}-5`;
+                // Target base for the out: 1=first(3), 2=second(4), 3=third/home(5)
+                let targetBase = { 1: 3, 2: 4, 3: 5 }[force];
+                // Unassisted: the fielder makes the play/tag himself at the same base he's standing on
+                // (1B at first, 2B at second, 3B at third) — shown as "U" instead of self-throw notation
+                if (pos === targetBase) {
+                    return `${pos}U`;
                 }
+                return `${pos}-${targetBase}`;
             }
 
             let b1 = bases[1], b2 = bases[2], b3 = bases[3];
@@ -1217,7 +1228,7 @@
                     let _oc = (_outSnap.b1?1:0)+(_outSnap.b2?1:0)+(_outSnap.b3?1:0);
                     let _moved = _oc > 0 && runnerDetail && !runnerDetail.includes('hold') && !runnerDetail.includes('holds');
                     let _sub = _moved ? (_oc === 1 ? 'RUNNER ADVANCES' : 'RUNNERS ADVANCE') : null;
-                    let _scoreSub = isLineout ? null : groundOutScoring(ones, isLineout ? 1 : forceOutLoc);
+                    let _scoreSub = isLineout ? `L${ones}` : groundOutScoring(ones, forceOutLoc);
                     showStamp('OUT','out', _sub || _scoreSub);
                 })(); }
                 postResolutionLoop();
@@ -1573,20 +1584,28 @@
             setQuickSteal('qs-2nd', 2, can2 || canDs1);
             // 3rd: stealable if r2 and not r3, OR double steal (r2+r3)
             setQuickSteal('qs-3rd', 3, can3 || canDs1 || canDs2);
-            // Home: stealable if r3
-            setQuickSteal('qs-home', 4, canH || canDs2);
+            // Home: only S+ runners can steal home (or be part of double steal to home)
+            let r3speed = bases[3] ? bases[3].speed : 'NORM';
+            let canHsplus = canH && r3speed === 'S+';
+            let canDs2splus = canDs2 && r3speed === 'S+';
+            setQuickSteal('qs-home', 4, canHsplus || canDs2splus);
 
             // Validate current selection against new availability
             if (!can2 && !canDs1) quickStealSelected.delete(2);
             if (!can3 && !canDs1 && !canDs2) quickStealSelected.delete(3);
-            if (!canH && !canDs2) quickStealSelected.delete(4);
+            if (!canHsplus && !canDs2splus) quickStealSelected.delete(4);
 
             updateQuickStealConfirm();
 
             // ── Bunt button ──
             // Require batter hand to be selected first, so the bunt is tied to the
             // batter currently being set up (traits/contact), not the previous one.
-            let canBunt = !o3 && !!bHand && (!!bases[1] || !!bases[2] || !!bases[3]);
+            // Bunt requires batter hand set.
+            // If only runner is on 3rd, they must be S+ to attempt a bunt-for-run.
+            // If runners on 1st or 2nd exist (with or without 3rd), bunt is always available.
+            let r3forBunt = bases[3] ? bases[3].speed : 'NORM';
+            let thirdOkForBunt = !bases[3] || r3forBunt === 'S+' || !!bases[1] || !!bases[2];
+            let canBunt = !o3 && !!bHand && (!!bases[1] || !!bases[2] || !!bases[3]) && thirdOkForBunt;
             let qb = document.getElementById('qb-btn');
             if (canBunt) { qb.classList.add('available'); qb.disabled = false; }
             else         { qb.classList.remove('available'); qb.disabled = true; }
