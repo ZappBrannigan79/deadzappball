@@ -1164,6 +1164,7 @@
         function pick(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
 
         function handleOut() {
+            forceOutLoc = 1; // reset before each at-bat resolution
             let msgBox = document.getElementById('result-msg');
             let detailsBox = document.getElementById('hit-details');
             let isLineout = (Math.floor(Math.random()*4)+1 === 4);
@@ -1258,9 +1259,19 @@
                 detailsBox.innerText = runnerDetail;
                 if (msgBox.innerText.includes('TRIPLE PLAY')) { showStamp('TRIPLE PLAY','out'); } else if (msgBox.innerText.includes('DOUBLE PLAY') || (runnerDetail && runnerDetail.startsWith('DOUBLE PLAY'))) { showStamp('DOUBLE PLAY','out'); } else { (() => {
                     let _oc = (_outSnap.b1?1:0)+(_outSnap.b2?1:0)+(_outSnap.b3?1:0);
-                    let _moved = _oc > 0 && runnerDetail && !runnerDetail.includes('hold') && !runnerDetail.includes('holds');
+                    // Runner genuinely advanced only if detail mentions movement (→) and is NOT
+                    // a hold, FC putout, or situation where only the out-runner "moved"
+                    let _moved = _oc > 0 && runnerDetail &&
+                        !runnerDetail.includes('hold') &&
+                        !runnerDetail.includes('holds') &&
+                        !runnerDetail.includes('out at') &&
+                        !runnerDetail.includes('Batter out') &&
+                        runnerDetail.includes('→');
                     let _sub = _moved ? (_oc === 1 ? 'RUNNER ADVANCES' : 'RUNNERS ADVANCE') : null;
-                    let _scoreSub = isLineout ? `L${ones}` : groundOutScoring(ones, forceOutLoc);
+                    // Use forceOutLoc only when applyInfieldGrounder actually ran (runners were on);
+                    // otherwise default to 1 (batter out at first) to avoid stale value
+                    let _effectiveForce = noRunners ? 1 : forceOutLoc;
+                    let _scoreSub = isLineout ? `L${ones}` : groundOutScoring(ones, _effectiveForce);
                     showStamp('OUT','out', _sub || _scoreSub);
                 })(); }
                 postResolutionLoop();
